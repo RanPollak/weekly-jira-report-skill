@@ -11,21 +11,21 @@ Automates weekly team update reports by fetching Jira data, generating formatted
 
 Use this skill when:
 - The user asks for a weekly report, weekly update, or team status report
-- The user mentions "Catalyst report" or references the team update
 - The user wants to generate a report from Jira issues
+- The user needs automated report generation and Google Drive upload
 
 ## Configuration
 
 **Jira Details:**
-- Site: redhat.atlassian.net
-- Email: rpollak@redhat.com
-- API Token: (stored in script)
-- Root Issue: AIPCC-5516 (Catalyst Platform)
+- Site: your-company.atlassian.net
+- Email: your-email@company.com
+- API Token: (configured in generate_weekly_update.py)
+- Root Issue: PROJECT-XXX (your root epic/issue)
 
 **Output Location:**
-- Local folder: `/home/rpollak/catalyst weekly/`
-- Files: `Catalyst_Weekly_Update_YYYY-MM-DD.{md,html}`
-- Google Drive Folder: https://drive.google.com/drive/folders/11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk
+- Local folder: `~/weekly-reports/`
+- Files: `TeamName_Weekly_Update_YYYY-MM-DD.{md,html}`
+- Google Drive Folder: (configured in convert_update_to_html.py)
 
 ## Report Format
 
@@ -63,12 +63,12 @@ The Overall Status section includes a legend at the top:
 
 1. **Fetch Jira Data**
    ```bash
-   python3 /home/rpollak/generate_weekly_update.py
+   python3 generate_weekly_update.py
    ```
 
 2. **Convert to HTML and Upload to Google Drive**
    ```bash
-   python3 /home/rpollak/convert_update_to_html.py
+   python3 convert_update_to_html.py
    ```
    - Automatically converts markdown to HTML
    - Automatically uploads to Google Drive folder via rclone
@@ -76,7 +76,7 @@ The Overall Status section includes a legend at the top:
 
 3. **Preview in Browser (Optional)**
    ```bash
-   xdg-open /home/rpollak/Catalyst_Weekly_Update_YYYY-MM-DD.html
+   xdg-open ~/weekly-reports/TeamName_Weekly_Update_YYYY-MM-DD.html
    ```
 
 ## Google Drive Upload
@@ -85,7 +85,7 @@ The Overall Status section includes a legend at the top:
 - Conversion script automatically uploads HTML to Google Drive (personal or Shared Drive)
 - Uses rclone with `gdrive` remote
 - For Shared Drives: requires `--drive-shared-with-me` flag
-- Upload path: Full path from Drive root (e.g., `AIPCC Shared Drive/AI Catalyst Platform/AI CAtalyst Weekly Report`)
+- Upload path: Full path from Drive root (e.g., `Team Drive Name/Department/Weekly Reports`)
 
 **One-Time Setup:**
 1. Install rclone: `sudo dnf install rclone` (Fedora) or equivalent
@@ -116,11 +116,9 @@ The Overall Status section includes a legend at the top:
 
 ## Scripts Location
 
-- Generator: `/home/rpollak/generate_weekly_update.py`
-- Converter (with auto-upload): `/home/rpollak/convert_update_to_html.py`
-- Upload setup: `/home/rpollak/setup_gdrive_upload.sh`
-- Manual upload: `/home/rpollak/upload_weekly_report.sh`
-- Jira Credentials: Embedded in generator script
+- Generator: `generate_weekly_update.py`
+- Converter (with auto-upload): `convert_update_to_html.py`
+- Jira Credentials: Configured at top of generator script
 
 ## Implementation Notes
 

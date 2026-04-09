@@ -14,6 +14,139 @@ Use this skill when:
 - The user wants to generate a report from Jira issues
 - The user needs automated report generation and Google Drive upload
 
+## Prerequisites
+
+Before using this skill, complete the following one-time setup:
+
+### 1. Install Python Dependencies
+
+```bash
+pip install requests markdown2
+```
+
+### 2. Install rclone
+
+**Fedora/RHEL:**
+```bash
+sudo dnf install rclone
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt install rclone
+```
+
+**macOS:**
+```bash
+brew install rclone
+```
+
+**Verify installation:**
+```bash
+rclone version
+```
+
+### 3. Generate Jira API Token
+
+1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
+2. Click "Create API token"
+3. Give it a name (e.g., "Weekly Reports")
+4. Copy the token (you won't be able to see it again)
+
+### 4. Configure rclone for Google Drive
+
+```bash
+rclone config
+```
+
+Follow these steps in the wizard:
+1. Type `n` (new remote)
+2. Name: `gdrive`
+3. Storage type: Find "Google Drive" and enter its number (usually 15 or 18)
+4. client_id: Press **Enter** (leave blank)
+5. client_secret: Press **Enter** (leave blank)
+6. Scope: Enter `1` (Full access)
+7. root_folder_id: Press **Enter**
+8. service_account_file: Press **Enter**
+9. Advanced config: Type `n`
+10. Auto config: Type `y` (browser will open for OAuth authentication)
+11. Authenticate in browser with your Google account
+12. Team Drive: Type `n` (unless using Team Drive exclusively)
+13. Confirm: Type `y`
+14. Quit: Type `q`
+
+**Test the connection:**
+```bash
+rclone lsd gdrive:
+```
+
+This should list your Google Drive folders.
+
+### 5. Install Scripts
+
+Download or clone the scripts:
+
+```bash
+# If using as Claude Code skill
+cd ~/.claude/skills
+git clone https://github.com/RanPollak/weekly-jira-report-skill.git weekly-jira-report
+
+# Copy scripts to working location
+cp ~/.claude/skills/weekly-jira-report/*.py ~/
+```
+
+Or download directly:
+```bash
+cd ~
+wget https://raw.githubusercontent.com/RanPollak/weekly-jira-report-skill/main/generate_weekly_update.py
+wget https://raw.githubusercontent.com/RanPollak/weekly-jira-report-skill/main/convert_update_to_html.py
+chmod +x *.py
+```
+
+### 6. Configure Scripts
+
+**Edit `generate_weekly_update.py`:**
+
+```python
+JIRA_URL = "https://your-company.atlassian.net"
+EMAIL = "your-email@company.com"
+API_TOKEN = "paste-your-jira-api-token-here"
+START_ISSUE = "PROJECT-123"  # Your root epic/issue key
+TEAM_NAME = "Your Team Name"
+OUTPUT_DIR = "~/weekly-reports"
+```
+
+**Edit `convert_update_to_html.py`:**
+
+```python
+OUTPUT_DIR = "~/weekly-reports"  # Match the above
+TEAM_NAME = "Your_Team_Name"  # Underscores, match the above
+DRIVE_FOLDER_PATH = "Your Folder/Path"  # Or "Shared Drive Name/Folder/Path"
+DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/YOUR-FOLDER-ID"
+USE_SHARED_DRIVE = True  # Set to False if using personal Drive
+```
+
+**Create output directory:**
+```bash
+mkdir -p ~/weekly-reports
+```
+
+### 7. Verify Setup
+
+Test the complete workflow:
+
+```bash
+# Test Jira connection
+python3 generate_weekly_update.py
+
+# Should create: ~/weekly-reports/YourTeam_Weekly_Update_YYYY-MM-DD.md
+
+# Test HTML conversion and upload
+python3 convert_update_to_html.py
+
+# Should create HTML and upload to Google Drive
+```
+
 ## Configuration
 
 **Jira Details:**

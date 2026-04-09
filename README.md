@@ -114,7 +114,7 @@ Claude will use the `weekly-jira-report` skill and run both scripts automaticall
 
 3. **Optional - Preview locally:**
    ```bash
-   xdg-open ~/catalyst\ weekly/Catalyst_Weekly_Update_*.html
+   xdg-open ~/weekly-reports/TeamName_Weekly_Update_*.html
    ```
 
 ## Report Format

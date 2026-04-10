@@ -6,7 +6,7 @@ Automates weekly team status reports from Jira with automatic Google Drive uploa
 
 ## Features
 
-- 📊 Fetches Jira issues hierarchically from a root epic
+- 📊 Fetches Jira issues hierarchically from a root initiative (or epic)
 - 📝 Generates formatted Markdown and HTML reports
 - ☁️ Automatically uploads to Google Drive (personal or Shared Drives)
 - 🎨 HTML optimized for Google Docs import
@@ -155,8 +155,9 @@ Edit `weekly_report.local.json` with your real values:
 `weekly_report.local.json` is gitignored, so secrets stay local.
 
 **How to find your root issue key:**
-- Open your main epic/issue in Jira
+- Open your main initiative (or epic) in Jira
 - Look at the URL or the issue key at the top (e.g., `AIPCC-5516`)
+- This is typically an Initiative or Epic at the top of your team's hierarchy
 
 ### Step 7: Optional Environment Variable Overrides
 
@@ -448,7 +449,7 @@ A: Yes - create separate config files or modify the script to loop through multi
 A: No, it's read-only. It only fetches data, never writes to Jira.
 
 **Q: What if my team doesn't use sprints?**  
-A: Works fine! It tracks all child issues under your root epic, sprint-based or not.
+A: Works fine! It tracks all child issues under your root initiative/epic, sprint-based or not.
 
 **Q: Can I customize the report sections?**  
 A: Absolutely! Edit `generate_weekly_update.py` - it's just Python template strings.

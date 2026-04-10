@@ -142,7 +142,7 @@ python3 convert_update_to_html.py
 - Site: your-company.atlassian.net
 - Email: your-email@company.com
 - API Token: (configured in generate_weekly_update.py)
-- Root Issue: PROJECT-XXX (your root epic/issue)
+- Root Issue: PROJECT-XXX (your root initiative or epic)
 
 **Output Location:**
 - Local folder: `~/weekly-reports/`

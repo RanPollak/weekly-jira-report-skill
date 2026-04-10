@@ -7,10 +7,14 @@ import subprocess
 import sys
 import os
 from datetime import datetime
-from config_loader import load_config, validate_required
+from config_loader import load_config, validate_required, mask_sensitive_text
 
-CFG = load_config()
-validate_required(CFG, ["OUTPUT_DIR", "TEAM_NAME", "DRIVE_FOLDER_PATH", "DRIVE_FOLDER_URL"])
+try:
+    CFG = load_config()
+    validate_required(CFG, ["OUTPUT_DIR", "TEAM_NAME", "DRIVE_FOLDER_PATH", "DRIVE_FOLDER_URL"])
+except Exception as e:
+    print(f"Configuration error: {e}")
+    raise SystemExit(1)
 
 OUTPUT_DIR = CFG["OUTPUT_DIR"]
 TEAM_NAME = CFG["TEAM_NAME_SLUG"]
@@ -76,7 +80,7 @@ def upload_to_drive(file_path):
             print(f"✓ View at: {DRIVE_FOLDER_URL}")
             return True
         else:
-            print(f"\n✗ Upload failed: {upload_result.stderr}")
+            print(f"\n✗ Upload failed: {mask_sensitive_text(upload_result.stderr, CFG)}")
             return False
 
     except subprocess.TimeoutExpired:
@@ -86,7 +90,7 @@ def upload_to_drive(file_path):
         print("\n⚠️  rclone not installed")
         return False
     except Exception as e:
-        print(f"\n✗ Upload error: {e}")
+        print(f"\n✗ Upload error: {mask_sensitive_text(e, CFG)}")
         return False
 
 def convert_to_html():

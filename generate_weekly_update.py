@@ -5,10 +5,14 @@ Generate Weekly Team Update in the specified format
 import requests
 import os
 from datetime import datetime
-from config_loader import load_config, validate_required
+from config_loader import load_config, validate_required, mask_sensitive_text
 
-CFG = load_config()
-validate_required(CFG, ["JIRA_URL", "EMAIL", "API_TOKEN", "START_ISSUE", "TEAM_NAME", "OUTPUT_DIR"])
+try:
+    CFG = load_config()
+    validate_required(CFG, ["JIRA_URL", "EMAIL", "API_TOKEN", "START_ISSUE", "TEAM_NAME", "OUTPUT_DIR"])
+except Exception as e:
+    print(f"Configuration error: {e}")
+    raise SystemExit(1)
 
 JIRA_URL = CFG["JIRA_URL"]
 EMAIL = CFG["EMAIL"]
@@ -32,7 +36,7 @@ def get_issue(issue_key):
             return response.json()
         return None
     except Exception as e:
-        print(f"Error fetching {issue_key}: {e}")
+        print(f"Error fetching {issue_key}: {mask_sensitive_text(e, CFG)}")
         return None
 
 def search_issues(jql, max_results=100):
@@ -52,7 +56,7 @@ def search_issues(jql, max_results=100):
             return response.json().get('issues', [])
         return []
     except Exception as e:
-        print(f"Error searching: {e}")
+        print(f"Error searching: {mask_sensitive_text(e, CFG)}")
         return []
 
 def get_child_issues(issue_key):

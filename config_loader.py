@@ -38,6 +38,23 @@ def _parse_bool(value: str) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _validate_private_file_permissions(path: str):
+    # Skip permission checks on non-POSIX systems.
+    if os.name != "posix":
+        return
+    if _parse_bool(os.getenv("WEEKLY_REPORT_ALLOW_INSECURE_PERMS", "false")):
+        return
+
+    mode = os.stat(path).st_mode & 0o777
+    # Require owner-only read/write/execute bits (e.g. 600, 640 is rejected).
+    if mode & 0o077:
+        raise PermissionError(
+            f"Insecure permissions on config file: {path} (mode {oct(mode)}). "
+            "Run: chmod 600 <config-file> "
+            "or set WEEKLY_REPORT_ALLOW_INSECURE_PERMS=true to bypass."
+        )
+
+
 def _load_json_if_exists(path: str) -> Dict[str, Any]:
     if not path or not os.path.exists(path):
         return {}
@@ -53,12 +70,19 @@ def load_config() -> Dict[str, Any]:
     home_local_path = os.path.expanduser("~/.weekly-report.local.json")
 
     file_cfg = {}
+    config_source_path = None
     if explicit_path:
-        file_cfg = _load_json_if_exists(os.path.expanduser(explicit_path))
+        config_source_path = os.path.expanduser(explicit_path)
+        _validate_private_file_permissions(config_source_path)
+        file_cfg = _load_json_if_exists(config_source_path)
     elif os.path.exists(repo_local_path):
-        file_cfg = _load_json_if_exists(repo_local_path)
+        config_source_path = repo_local_path
+        _validate_private_file_permissions(config_source_path)
+        file_cfg = _load_json_if_exists(config_source_path)
     elif os.path.exists(home_local_path):
-        file_cfg = _load_json_if_exists(home_local_path)
+        config_source_path = home_local_path
+        _validate_private_file_permissions(config_source_path)
+        file_cfg = _load_json_if_exists(config_source_path)
 
     cfg.update(file_cfg)
 
@@ -83,6 +107,7 @@ def load_config() -> Dict[str, Any]:
 
     cfg["OUTPUT_DIR"] = os.path.expanduser(str(cfg.get("OUTPUT_DIR", "~/weekly-reports")))
     cfg["TEAM_NAME_SLUG"] = str(cfg.get("TEAM_NAME", "Team")).replace(" ", "_")
+    cfg["CONFIG_SOURCE_PATH"] = config_source_path or "defaults/env-only"
     return cfg
 
 
@@ -102,3 +127,12 @@ def validate_required(cfg: Dict[str, Any], required_keys):
             + ", ".join(missing)
             + ". Configure weekly_report.local.json or set environment variables."
         )
+
+
+def mask_sensitive_text(text: Any, cfg: Dict[str, Any]) -> str:
+    masked = str(text)
+    for key in ("API_TOKEN", "EMAIL"):
+        value = str(cfg.get(key, "")).strip()
+        if value and not _is_placeholder(value):
+            masked = masked.replace(value, "[REDACTED]")
+    return masked

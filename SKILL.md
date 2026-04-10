@@ -1,289 +1,116 @@
 ---
 name: weekly-jira-report
-description: Use when generating weekly team status reports from Jira with automatic Google Drive upload via rclone
+description: >-
+  Generates weekly team status reports from Jira data with HTML conversion
+  and Google Drive upload. Use when the user asks to 'generate a weekly report',
+  'create a team status update', 'build the weekly Jira report', 'make my
+  weekly update', or mentions 'Catalyst report'.
 ---
 
 # Weekly Jira Report Generator
 
-Automates weekly team update reports by fetching Jira data, generating formatted markdown/HTML, and uploading to Google Drive (including Shared Drives).
+## Step 1: Interview the User
 
-## When to Use
+Before doing anything, ask the user for:
 
-Use this skill when:
-- The user asks for a weekly report, weekly update, or team status report
-- The user wants to generate a report from Jira issues
-- The user needs automated report generation and Google Drive upload
+1. **Root Jira issue key** (e.g., `AIPCC-5516`) -- the parent epic to report on
+2. **Team name** (e.g., `Catalyst`) -- used in report title and filename
+3. **Output directory** (e.g., `~/weekly-reports`) -- where to save generated files
+4. **Google Drive upload?** -- ask if they want to upload to Google Drive. If yes, ask:
+   a. **Google Drive folder path** (e.g., `Shared Drive/Team/Reports`) -- rclone destination
+   b. **Google Drive folder URL** -- link to share after upload
+   c. **Shared Drive?** -- yes/no, affects rclone flags
+   If no, skip the Drive sub-questions and proceed to Step 2.
+
+## Step 2: Fetch Jira Data
+
+Run these acli commands to gather data. Use `--csv` for search commands (compact output) and `--json` only for individual issue views when you need full descriptions.
+
+**Fetch the root issue:**
+```bash
+acli jira workitem view ISSUE_KEY --json --fields "*all"
+```
+
+**Fetch all child issues (initiatives):**
+```bash
+acli jira workitem search --jql "parent = ISSUE_KEY" --csv --fields "key,summary,status,assignee,issuetype,priority" --limit 100
+```
+
+**For each initiative, fetch its sub-tasks:**
+```bash
+acli jira workitem search --jql "parent = INITIATIVE_KEY" --csv --fields "key,summary,status,assignee,issuetype,priority" --limit 100
+```
+
+**For issues that need deeper analysis** (e.g., to understand blockers or risks), fetch individual issues:
+```bash
+acli jira workitem view ISSUE_KEY --json --fields "summary,status,description"
+```
+
+If there are many initiatives, fetch sub-tasks only for the top 10 by priority.
+
+**Note:** The `duedate` field is not available in acli search. Due dates can be checked via individual issue views if needed.
+
+## Step 3: Analyze and Write the Report
+
+This is where you add real value. Do NOT just template the data mechanically. Use your judgment:
+
+**Categorize issues by status:**
+- Done / Closed → Completed
+- In Progress / Review → In Progress
+- Blocked → Blocked
+- Everything else → Planned
+
+**Calculate progress** as percentages of completed / in-progress / planned.
+
+**Determine overall status:**
+- Any blocked items → consider Off Track (🔴)
+- More in-progress than completed, or >60% in progress → consider At Risk (🟠)
+- Otherwise → On Track (🟢)
+- Use your judgment -- if blockers are minor, the project may still be On Track.
+
+**Write the report in markdown** following the format in `references/report-format.md`. Key sections where you should reason, not just copy:
+
+- **This Week**: Summarize completed work in a way that tells a story, not just a list. Group related completions.
+- **Next Week**: Prioritize by impact, not just Jira priority field.
+- **What Is Blocked**: For each blocker, infer the likely cause from the issue description and suggest who might unblock it.
+- **Risks**: Identify risks by analyzing patterns -- e.g., multiple blocked items in one area, items with no assignee, overdue dates, stalled in-progress items.
+- **Decisions Needed**: Infer from blockers and risks what decisions leadership needs to make.
+- **Team Health**: Note if workload looks uneven (one person assigned too many items), if velocity seems low, or if blocked items are piling up. Ask the user to confirm or adjust.
+- **Deep Dive**: For each major initiative, provide a meaningful status narrative, not just percentages.
+
+**If a previous report exists** in the output directory, read it and note:
+- What changed since last week (new completions, new blockers, resolved blockers)
+- Whether status improved or degraded
+- Include a brief "Changes from Last Week" note where relevant
+
+Save the report as `TEAM_NAME_Weekly_Update_YYYY-MM-DD.md` in the output directory.
+
+## Step 4: Review with the User
+
+Present the generated report to the user. Ask them to review and refine:
+- Are the risk assessments accurate?
+- Any blockers or decisions to add/remove?
+- Team health notes?
+
+Make edits based on their feedback.
+
+## Step 5: Convert to HTML and Upload
+
+Once the user approves the report:
+
+```bash
+uv run scripts/convert_and_upload.py \
+  --output-dir "OUTPUT_DIR" \
+  --team "TEAM_NAME" \
+  --drive-path "DRIVE_FOLDER_PATH" \
+  --drive-url "DRIVE_FOLDER_URL" \
+  [--shared-drive]
+```
+
+Skip this step if the user declined Google Drive upload in Step 1.
 
 ## Prerequisites
 
-Before using this skill, complete the following one-time setup:
-
-### 1. Install Python Dependencies
-
-```bash
-pip install requests markdown2
-```
-
-### 2. Install rclone
-
-**Fedora/RHEL:**
-```bash
-sudo dnf install rclone
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt install rclone
-```
-
-**macOS:**
-```bash
-brew install rclone
-```
-
-**Verify installation:**
-```bash
-rclone version
-```
-
-### 3. Generate Jira API Token
-
-1. Go to https://id.atlassian.com/manage-profile/security/api-tokens
-2. Click "Create API token"
-3. Give it a name (e.g., "Weekly Reports")
-4. Copy the token (you won't be able to see it again)
-
-### 4. Configure rclone for Google Drive
-
-```bash
-rclone config
-```
-
-Follow these steps in the wizard:
-1. Type `n` (new remote)
-2. Name: `gdrive`
-3. Storage type: Find "Google Drive" and enter its number (usually 15 or 18)
-4. client_id: Press **Enter** (leave blank)
-5. client_secret: Press **Enter** (leave blank)
-6. Scope: Enter `1` (Full access)
-7. root_folder_id: Press **Enter**
-8. service_account_file: Press **Enter**
-9. Advanced config: Type `n`
-10. Auto config: Type `y` (browser will open for OAuth authentication)
-11. Authenticate in browser with your Google account
-12. Team Drive: Type `n` (unless using Team Drive exclusively)
-13. Confirm: Type `y`
-14. Quit: Type `q`
-
-**Test the connection:**
-```bash
-rclone lsd gdrive:
-```
-
-This should list your Google Drive folders.
-
-### 5. Install Scripts
-
-Download or clone the scripts:
-
-```bash
-# If using as Claude Code skill
-cd ~/.claude/skills
-git clone https://github.com/RanPollak/weekly-jira-report-skill.git weekly-jira-report
-
-# Copy scripts to working location
-cp ~/.claude/skills/weekly-jira-report/*.py ~/
-```
-
-Or download directly:
-```bash
-cd ~
-wget https://raw.githubusercontent.com/RanPollak/weekly-jira-report-skill/main/generate_weekly_update.py
-wget https://raw.githubusercontent.com/RanPollak/weekly-jira-report-skill/main/convert_update_to_html.py
-chmod +x *.py
-```
-
-### 6. Configure Scripts (Local Private Config)
-
-Copy the template:
-
-```bash
-cp weekly_report.local.example.json weekly_report.local.json
-```
-
-Edit `weekly_report.local.json` with your real Jira and Drive values.
-
-`weekly_report.local.json` is gitignored and will not be committed.
-
-**Create output directory:**
-```bash
-mkdir -p ~/weekly-reports
-```
-
-### 7. Verify Setup
-
-Test the complete workflow:
-
-```bash
-# Test Jira connection
-python3 generate_weekly_update.py
-
-# Should create: ~/weekly-reports/YourTeam_Weekly_Update_YYYY-MM-DD.md
-
-# Test HTML conversion and upload
-python3 convert_update_to_html.py
-
-# Should create HTML and upload to Google Drive
-```
-
-## Configuration
-
-**Jira Details:**
-- Site: your-company.atlassian.net
-- Email: your-email@company.com
-- API Token: (configured in generate_weekly_update.py)
-- Root Issue: PROJECT-XXX (your root initiative or epic)
-
-**Output Location:**
-- Local folder: `~/weekly-reports/`
-- Files: `TeamName_Weekly_Update_YYYY-MM-DD.{md,html}`
-- Google Drive Folder: (configured in convert_update_to_html.py)
-
-## Report Format
-
-The report follows this structure:
-
-1. **Sprint Info** - Sprint number and ID
-2. **Overall Status** - Shows status legend (🟢 On Track / 🟠 At Risk / 🔴 Off Track) followed by current status and progress percentages
-3. **This Week** - Completed items only
-4. **Next Week** - Planned & in-progress, prioritized
-5. **What Is Blocked** - Current blockers with owners
-6. **Risks** - Forward-looking risks
-7. **Decisions Needed** - Specific decisions required
-8. **Team Health / Notes** - Team health assessment
-9. **Deep Dive** - Major initiatives with:
-   - Target delivery dates
-   - Priority indicators
-   - Progress tracking (Completed/In Progress/Planned)
-   - Change tracking table
-   - Sub-task breakdowns
-
-## Overall Status Format
-
-The Overall Status section includes a legend at the top:
-```
-## Overall Status
-🟢 On Track
-🟠 At Risk / Delay
-🔴 Off Track
-
-**Current Status:** [Automatically determined status]
-*X% Completed, Y% In Progress, Z% Planned*
-```
-
-## Execution Steps
-
-1. **Fetch Jira Data**
-   ```bash
-   python3 generate_weekly_update.py
-   ```
-
-2. **Convert to HTML and Upload to Google Drive**
-   ```bash
-   python3 convert_update_to_html.py
-   ```
-   - Automatically converts markdown to HTML
-   - Automatically uploads to Google Drive folder via rclone
-   - Displays upload confirmation with Drive link
-
-3. **Preview in Browser (Optional)**
-   ```bash
-   xdg-open ~/weekly-reports/TeamName_Weekly_Update_YYYY-MM-DD.html
-   ```
-
-4. **One-command full run (recommended)**
-   ```bash
-   chmod +x run_weekly_report.sh
-   ./run_weekly_report.sh
-   ```
-
-5. **Automatic weekly schedule (Friday 18:00 Israel time)**
-   ```bash
-   chmod +x run_weekly_report.sh setup_weekly_schedule.sh
-   ./setup_weekly_schedule.sh
-   ```
-   Optional custom time:
-   ```bash
-   ./setup_weekly_schedule.sh 17:30
-   ```
-   Verify:
-   ```bash
-   crontab -l | awk '/weekly-jira-report/'
-   ```
-
-## Google Drive Upload
-
-**Automatic Upload:**
-- Conversion script automatically uploads HTML to Google Drive (personal or Shared Drive)
-- Uses rclone with `gdrive` remote
-- For Shared Drives: requires `--drive-shared-with-me` flag
-- Upload path: Full path from Drive root (e.g., `Team Drive Name/Department/Weekly Reports`)
-
-**One-Time Setup:**
-1. Install rclone: `sudo dnf install rclone` (Fedora) or equivalent
-2. Configure: `rclone config`
-   - Create new remote named `gdrive`
-   - Type: Google Drive
-   - Scope: Full access (option 1)
-   - Use auto config: yes (opens browser for OAuth)
-3. Test: `rclone lsd gdrive:` should list your drives
-
-**For Shared Drives:**
-- Use full path including Shared Drive name
-- Add `--drive-shared-with-me` flag to rclone commands
-- Example: `rclone copy file.html "gdrive:TeamDrive/Folder" --drive-shared-with-me`
-
-**Common Upload Issues:**
-- Files not appearing: Check if using Shared Drive (need `--drive-shared-with-me`)
-- Permission denied: Verify rclone OAuth token is valid
-- Wrong folder: Use full path from Drive root, not folder ID
-
-## Important Notes
-
-- Always generate both markdown and HTML versions
-- HTML automatically uploads to Google Drive (no manual drag-and-drop needed)
-- The HTML file is optimized for Google Docs import
-- Sprint info, risks, decisions, and team health need manual completion
-- If upload fails, manual upload instructions are displayed
-
-## Scripts Location
-
-- Generator: `generate_weekly_update.py`
-- Converter (with auto-upload): `convert_update_to_html.py`
-- Runner (pipeline): `run_weekly_report.sh`
-- Scheduler setup: `setup_weekly_schedule.sh`
-- Local private config: `weekly_report.local.json` (from `weekly_report.local.example.json`)
-
-## Implementation Notes
-
-**Key Libraries:**
-- `requests` - Jira REST API calls
-- `markdown2` - Markdown to HTML conversion (with tables support)
-- `rclone` - Google Drive uploads (system command via subprocess)
-
-**Upload Function Pattern:**
-```python
-def upload_to_drive(file_path):
-    drive_path = "Shared Drive Name/Folder/Subfolder"
-    result = subprocess.run(
-        ['rclone', 'copy', file_path, f'gdrive:{drive_path}',
-         '--drive-shared-with-me', '-v'],
-        capture_output=True, text=True, timeout=60
-    )
-    return result.returncode == 0
-```
-
-**Critical for Shared Drives:**
-- Always use `--drive-shared-with-me` flag
-- Use full path, not folder IDs
-- Folder IDs work for personal Drive but fail silently for Shared Drives
+- `acli` -- authenticated (`acli jira auth`)
+- `rclone` -- configured with a Google Drive remote (`rclone config`)
+- `uv` -- Python package manager (for the HTML conversion script)

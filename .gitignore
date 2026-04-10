@@ -9,6 +9,7 @@ __pycache__/
 venv/
 env/
 ENV/
+.venv/
 
 # IDE
 .vscode/
@@ -25,8 +26,11 @@ Thumbs.db
 *.html
 !README.md
 !SKILL.md
+!references/*.md
 
-# Credentials
+# Environment / Credentials
+*.env
+.env*
 *.token
 *.key
 credentials.json

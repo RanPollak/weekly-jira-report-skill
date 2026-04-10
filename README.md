@@ -474,7 +474,7 @@ Contributions welcome! Please:
 
 ## License
 
-MIT License - Feel free to use and adapt for your team's needs!
+Apache License 2.0 - Feel free to use and adapt for your team's needs.
 
 ## Author
 

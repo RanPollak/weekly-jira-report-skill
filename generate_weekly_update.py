@@ -3,36 +3,30 @@
 Generate Weekly Team Update in the specified format
 """
 import requests
-import base64
+import os
 from datetime import datetime
-from collections import defaultdict
+from config_loader import load_config, validate_required
 
-# Jira configuration - UPDATE THESE VALUES
-JIRA_URL = "https://your-company.atlassian.net"
-EMAIL = "your-email@company.com"
-API_TOKEN = "YOUR_JIRA_API_TOKEN_HERE"  # Generate at: https://id.atlassian.com/manage-profile/security/api-tokens
-START_ISSUE = "PROJECT-123"  # Your root epic/issue key
-TEAM_NAME = "Your Team Name"
+CFG = load_config()
+validate_required(CFG, ["JIRA_URL", "EMAIL", "API_TOKEN", "START_ISSUE", "TEAM_NAME", "OUTPUT_DIR"])
 
-# Output directory - UPDATE THIS PATH
-OUTPUT_DIR = "~/weekly-reports"  # Will be expanded to full path
+JIRA_URL = CFG["JIRA_URL"]
+EMAIL = CFG["EMAIL"]
+API_TOKEN = CFG["API_TOKEN"]
+START_ISSUE = CFG["START_ISSUE"]
+TEAM_NAME = CFG["TEAM_NAME"]
+OUTPUT_DIR = CFG["OUTPUT_DIR"]
 
-# Create basic auth
-auth_str = f"{EMAIL}:{API_TOKEN}"
-auth_bytes = auth_str.encode('ascii')
-base64_auth = base64.b64encode(auth_bytes).decode('ascii')
-
-headers = {
-    'Authorization': f'Basic {base64_auth}',
-    'Content-Type': 'application/json'
-}
+headers = {'Content-Type': 'application/json'}
+AUTH = (EMAIL, API_TOKEN)
 
 def get_issue(issue_key):
     """Fetch issue details from Jira"""
     try:
         response = requests.get(
             f"{JIRA_URL}/rest/api/3/issue/{issue_key}",
-            headers=headers
+            headers=headers,
+            auth=AUTH
         )
         if response.status_code == 200:
             return response.json()
@@ -47,6 +41,7 @@ def search_issues(jql, max_results=100):
         response = requests.post(
             f"{JIRA_URL}/rest/api/3/search/jql",
             headers=headers,
+            auth=AUTH,
             json={
                 'jql': jql,
                 'maxResults': max_results,
@@ -376,17 +371,12 @@ def generate_weekly_update():
 
 # Main execution
 if __name__ == "__main__":
-    import os
-
     print(f"Generating weekly update for {TEAM_NAME}...\n")
     report = generate_weekly_update()
 
     if report:
-        # Expand ~ to full path
-        output_dir = os.path.expanduser(OUTPUT_DIR)
-        os.makedirs(output_dir, exist_ok=True)
-
-        output_file = os.path.join(output_dir, f"{TEAM_NAME.replace(' ', '_')}_Weekly_Update_{datetime.now().strftime('%Y-%m-%d')}.md")
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        output_file = os.path.join(OUTPUT_DIR, f"{CFG['TEAM_NAME_SLUG']}_Weekly_Update_{datetime.now().strftime('%Y-%m-%d')}.md")
 
         with open(output_file, 'w') as f:
             f.write(report)

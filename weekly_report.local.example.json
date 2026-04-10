@@ -1,0 +1,11 @@
+{
+  "JIRA_URL": "https://your-company.atlassian.net",
+  "EMAIL": "your-email@company.com",
+  "API_TOKEN": "paste-your-api-token-here",
+  "START_ISSUE": "PROJECT-123",
+  "TEAM_NAME": "Your Team Name",
+  "OUTPUT_DIR": "~/weekly-reports",
+  "DRIVE_FOLDER_PATH": "Team Drive Name/Department/Weekly Reports",
+  "DRIVE_FOLDER_URL": "https://drive.google.com/drive/folders/YOUR-FOLDER-ID",
+  "USE_SHARED_DRIVE": true
+}

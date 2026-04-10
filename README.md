@@ -128,33 +128,50 @@ rclone lsd gdrive:
 
 You should see your Google Drive folders listed.
 
-### Step 6: Configure Your Jira Settings
+### Step 6: Configure Local Settings (Private, Not Committed)
 
-Edit `generate_weekly_update.py` (line 10-15):
+Copy the local config template:
 
-```python
-JIRA_URL = "https://your-company.atlassian.net"  # Your Jira site
-EMAIL = "your-email@company.com"                # Your Jira email
-API_TOKEN = "paste-your-api-token-here"         # From Step 3
-START_ISSUE = "PROJECT-123"                     # Your root epic/issue key
-TEAM_NAME = "Your Team Name"                    # Your team's name
-OUTPUT_DIR = "~/weekly-reports"                 # Where to save reports
+```bash
+cp weekly_report.local.example.json weekly_report.local.json
 ```
+
+Edit `weekly_report.local.json` with your real values:
+
+```json
+{
+  "JIRA_URL": "https://your-company.atlassian.net",
+  "EMAIL": "your-email@company.com",
+  "API_TOKEN": "paste-your-api-token-here",
+  "START_ISSUE": "PROJECT-123",
+  "TEAM_NAME": "Your Team Name",
+  "OUTPUT_DIR": "~/weekly-reports",
+  "DRIVE_FOLDER_PATH": "Team Drive Name/Department/Weekly Reports",
+  "DRIVE_FOLDER_URL": "https://drive.google.com/drive/folders/YOUR-FOLDER-ID",
+  "USE_SHARED_DRIVE": true
+}
+```
+
+`weekly_report.local.json` is gitignored, so secrets stay local.
 
 **How to find your root issue key:**
 - Open your main epic/issue in Jira
 - Look at the URL or the issue key at the top (e.g., `AIPCC-5516`)
 
-### Step 7: Configure Google Drive Settings
+### Step 7: Optional Environment Variable Overrides
 
-Edit `convert_update_to_html.py` (line 11-15):
+You can override any config key via environment variables:
 
-```python
-OUTPUT_DIR = "~/weekly-reports"                              # Match Step 6
-TEAM_NAME = "Your_Team_Name"                                 # Underscores, match Step 6
-DRIVE_FOLDER_PATH = "Your Folder/Path"                       # See below
-DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/YOUR-FOLDER-ID"
-USE_SHARED_DRIVE = True                                      # True for Shared Drive, False for personal
+```bash
+export JIRA_URL="https://your-company.atlassian.net"
+export EMAIL="your-email@company.com"
+export API_TOKEN="..."
+```
+
+Or point to a different config file:
+
+```bash
+export WEEKLY_REPORT_CONFIG="$HOME/.weekly-report.local.json"
 ```
 
 **For Personal Drive:**
@@ -260,6 +277,37 @@ After upload, the HTML file appears in your Drive folder. To convert to Google D
 **Every week, just run:**
 ```bash
 python3 generate_weekly_update.py && python3 convert_update_to_html.py
+```
+
+**Or run the helper script (includes logging + lock):**
+```bash
+chmod +x run_weekly_report.sh
+./run_weekly_report.sh
+```
+
+### Automated Weekly Schedule (Friday 18:00 Israel Time)
+
+Install the cron schedule:
+
+```bash
+chmod +x run_weekly_report.sh setup_weekly_schedule.sh
+./setup_weekly_schedule.sh
+```
+
+Custom time (24h format):
+
+```bash
+./setup_weekly_schedule.sh 17:30
+```
+
+This installs:
+- `CRON_TZ=Asia/Jerusalem`
+- Weekly run on Friday (`* * * * 5`) at your selected time
+
+Verify:
+
+```bash
+crontab -l | awk '/weekly-jira-report/'
 ```
 
 The report automatically includes:
@@ -383,11 +431,12 @@ elif status in ['blocked', 'on hold']:
 A: No! It works standalone. Claude Code integration is optional but convenient.
 
 **Q: Can I run this on a schedule (cron)?**  
-A: Yes! Add to crontab:
+A: Yes. Use:
 ```bash
-# Every Friday at 4 PM
-0 16 * * 5 cd ~ && python3 generate_weekly_update.py && python3 convert_update_to_html.py
+chmod +x run_weekly_report.sh setup_weekly_schedule.sh
+./setup_weekly_schedule.sh
 ```
+Default schedule is Friday 18:00 Israel time.
 
 **Q: Will this work with Jira Cloud and Jira Server?**  
 A: Yes for Jira Cloud. Jira Server/Data Center may need API endpoint adjustments.

@@ -103,28 +103,17 @@ wget https://raw.githubusercontent.com/RanPollak/weekly-jira-report-skill/main/c
 chmod +x *.py
 ```
 
-### 6. Configure Scripts
+### 6. Configure Scripts (Local Private Config)
 
-**Edit `generate_weekly_update.py`:**
+Copy the template:
 
-```python
-JIRA_URL = "https://your-company.atlassian.net"
-EMAIL = "your-email@company.com"
-API_TOKEN = "paste-your-jira-api-token-here"
-START_ISSUE = "PROJECT-123"  # Your root epic/issue key
-TEAM_NAME = "Your Team Name"
-OUTPUT_DIR = "~/weekly-reports"
+```bash
+cp weekly_report.local.example.json weekly_report.local.json
 ```
 
-**Edit `convert_update_to_html.py`:**
+Edit `weekly_report.local.json` with your real Jira and Drive values.
 
-```python
-OUTPUT_DIR = "~/weekly-reports"  # Match the above
-TEAM_NAME = "Your_Team_Name"  # Underscores, match the above
-DRIVE_FOLDER_PATH = "Your Folder/Path"  # Or "Shared Drive Name/Folder/Path"
-DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/YOUR-FOLDER-ID"
-USE_SHARED_DRIVE = True  # Set to False if using personal Drive
-```
+`weekly_report.local.json` is gitignored and will not be committed.
 
 **Create output directory:**
 ```bash
@@ -212,6 +201,26 @@ The Overall Status section includes a legend at the top:
    xdg-open ~/weekly-reports/TeamName_Weekly_Update_YYYY-MM-DD.html
    ```
 
+4. **One-command full run (recommended)**
+   ```bash
+   chmod +x run_weekly_report.sh
+   ./run_weekly_report.sh
+   ```
+
+5. **Automatic weekly schedule (Friday 18:00 Israel time)**
+   ```bash
+   chmod +x run_weekly_report.sh setup_weekly_schedule.sh
+   ./setup_weekly_schedule.sh
+   ```
+   Optional custom time:
+   ```bash
+   ./setup_weekly_schedule.sh 17:30
+   ```
+   Verify:
+   ```bash
+   crontab -l | awk '/weekly-jira-report/'
+   ```
+
 ## Google Drive Upload
 
 **Automatic Upload:**
@@ -251,7 +260,9 @@ The Overall Status section includes a legend at the top:
 
 - Generator: `generate_weekly_update.py`
 - Converter (with auto-upload): `convert_update_to_html.py`
-- Jira Credentials: Configured at top of generator script
+- Runner (pipeline): `run_weekly_report.sh`
+- Scheduler setup: `setup_weekly_schedule.sh`
+- Local private config: `weekly_report.local.json` (from `weekly_report.local.example.json`)
 
 ## Implementation Notes
 

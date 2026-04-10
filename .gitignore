@@ -30,3 +30,6 @@ Thumbs.db
 *.token
 *.key
 credentials.json
+weekly_report.local.json
+.weekly-report.local.json
+logs/

@@ -7,16 +7,17 @@ import subprocess
 import sys
 import os
 from datetime import datetime
+from config_loader import load_config, validate_required
 
-# Configuration - UPDATE THESE VALUES
-OUTPUT_DIR = "~/weekly-reports"  # Directory containing markdown files
-TEAM_NAME = "Your_Team_Name"  # Must match the name used in generate_weekly_update.py
-DRIVE_FOLDER_PATH = "Your Folder Path"  # e.g., "Team Drive/Reports/Weekly" or "My Drive/Reports"
-DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/YOUR-FOLDER-ID"
-USE_SHARED_DRIVE = True  # Set to True if uploading to Shared Drive (Team Drive)
+CFG = load_config()
+validate_required(CFG, ["OUTPUT_DIR", "TEAM_NAME", "DRIVE_FOLDER_PATH", "DRIVE_FOLDER_URL"])
 
-# Expand paths
-OUTPUT_DIR = os.path.expanduser(OUTPUT_DIR)
+OUTPUT_DIR = CFG["OUTPUT_DIR"]
+TEAM_NAME = CFG["TEAM_NAME_SLUG"]
+DRIVE_FOLDER_PATH = CFG["DRIVE_FOLDER_PATH"]
+DRIVE_FOLDER_URL = CFG["DRIVE_FOLDER_URL"]
+USE_SHARED_DRIVE = bool(CFG["USE_SHARED_DRIVE"])
+
 DATE = datetime.now().strftime('%Y-%m-%d')
 REPORT_FILE = os.path.join(OUTPUT_DIR, f'{TEAM_NAME}_Weekly_Update_{DATE}.md')
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, f'{TEAM_NAME}_Weekly_Update_{DATE}.html')

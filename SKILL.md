@@ -1,89 +1,111 @@
 ---
 name: weekly-jira-report
 description: >-
-  Generates weekly team status reports from Jira data with HTML conversion
-  and Google Drive upload. Use when the user asks to 'generate a weekly report',
-  'create a team status update', 'build the weekly Jira report', 'make my
-  weekly update', or mentions 'Catalyst report'.
+  AI-native weekly team status report generator from Jira. Claude fetches data via Jira REST API,
+  analyzes it with judgment, and writes meaningful reports. Use when the user asks to 'generate
+  a weekly report', 'create a team status update', or 'make my weekly update'.
 ---
 
-# Weekly Jira Report Generator
+# Weekly Jira Report Generator (AI-Native)
 
-## Step 1: Interview the User
+## Step 1: Load Configuration
 
-Before doing anything, ask the user for:
+Check for configuration file at `~/.claude/skills/weekly-jira-report/weekly_report.local.json`:
 
-1. **Root Jira issue key** (e.g., `AIPCC-5516`) -- the parent epic to report on
-2. **Team name** (e.g., `Catalyst`) -- used in report title and filename
-3. **Output directory** (e.g., `~/weekly-reports`) -- where to save generated files
-4. **Google Drive upload?** -- ask if they want to upload to Google Drive. If yes, ask:
-   a. **Google Drive folder path** (e.g., `Shared Drive/Team/Reports`) -- rclone destination
-   b. **Google Drive folder URL** -- link to share after upload
-   c. **Shared Drive?** -- yes/no, affects rclone flags
-   If no, skip the Drive sub-questions and proceed to Step 2.
-
-## Step 2: Fetch Jira Data
-
-Run these acli commands to gather data. Use `--csv` for search commands (compact output) and `--json` only for individual issue views when you need full descriptions.
-
-**Fetch the root issue:**
-```bash
-acli jira workitem view ISSUE_KEY --json --fields "*all"
+```json
+{
+  "JIRA_URL": "https://your-company.atlassian.net",
+  "EMAIL": "your@email.com",
+  "API_TOKEN": "your-jira-api-token",
+  "START_ISSUE": "PROJECT-123",
+  "TEAM_NAME": "Your Team",
+  "OUTPUT_DIR": "~/weekly-reports",
+  "DRIVE_FOLDER_PATH": "Shared Drive/Team/Reports",
+  "DRIVE_FOLDER_URL": "https://drive.google.com/drive/folders/YOUR-ID",
+  "USE_SHARED_DRIVE": true
+}
 ```
 
-**Fetch all child issues (initiatives):**
+If values are missing or placeholders, ask the user.
+
+## Step 2: Fetch Jira Data via REST API
+
+Use curl to fetch data directly from Jira. Authenticate with Basic Auth (email:api_token in base64).
+
+**Fetch root issue:**
 ```bash
-acli jira workitem search --jql "parent = ISSUE_KEY" --csv --fields "key,summary,status,assignee,issuetype,priority" --limit 100
+curl -s -u "$EMAIL:$API_TOKEN" \
+  "$JIRA_URL/rest/api/3/issue/$ISSUE_KEY" | jq .
 ```
 
-**For each initiative, fetch its sub-tasks:**
+**Fetch child issues (initiatives):**
 ```bash
-acli jira workitem search --jql "parent = INITIATIVE_KEY" --csv --fields "key,summary,status,assignee,issuetype,priority" --limit 100
+curl -s -u "$EMAIL:$API_TOKEN" \
+  "$JIRA_URL/rest/api/3/search?jql=parent=$ISSUE_KEY&maxResults=100&fields=key,summary,status,assignee,issuetype,priority" | jq .
 ```
 
-**For issues that need deeper analysis** (e.g., to understand blockers or risks), fetch individual issues:
+**For each initiative, fetch sub-tasks:**
 ```bash
-acli jira workitem view ISSUE_KEY --json --fields "summary,status,description"
+curl -s -u "$EMAIL:$API_TOKEN" \
+  "$JIRA_URL/rest/api/3/search?jql=parent=$INITIATIVE_KEY&maxResults=100&fields=key,summary,status,assignee,issuetype,priority" | jq .
 ```
 
-If there are many initiatives, fetch sub-tasks only for the top 10 by priority.
-
-**Note:** The `duedate` field is not available in acli search. Due dates can be checked via individual issue views if needed.
+**For deeper analysis**, fetch individual issues:
+```bash
+curl -s -u "$EMAIL:$API_TOKEN" \
+  "$JIRA_URL/rest/api/3/issue/$ISSUE_KEY?fields=summary,status,description" | jq .
+```
 
 ## Step 3: Analyze and Write the Report
 
-This is where you add real value. Do NOT just template the data mechanically. Use your judgment:
+**This is where you add real AI value.** Do NOT just template data mechanically. Use your judgment:
 
-**Categorize issues by status:**
-- Done / Closed → Completed
-- In Progress / Review → In Progress
-- Blocked → Blocked
+### Categorize Issues by Status
+
+- `Done` / `Closed` → Completed
+- `In Progress` / `In Review` → In Progress  
+- `Blocked` → Blocked
 - Everything else → Planned
 
-**Calculate progress** as percentages of completed / in-progress / planned.
+### Calculate Progress
 
-**Determine overall status:**
+Compute percentages: completed / in-progress / planned
+
+### Determine Overall Status
+
 - Any blocked items → consider Off Track (🔴)
-- More in-progress than completed, or >60% in progress → consider At Risk (🟠)
+- >60% in progress with low completion → At Risk (🟠)
 - Otherwise → On Track (🟢)
-- Use your judgment -- if blockers are minor, the project may still be On Track.
+- **Use judgment** - minor blockers may not mean Off Track
 
-**Write the report in markdown** following the format in `references/report-format.md`. Key sections where you should reason, not just copy:
+### Write Report Following `references/report-format.md`
 
-- **This Week**: Summarize completed work in a way that tells a story, not just a list. Group related completions.
+**Key sections where you reason, not just copy:**
+
+- **This Week**: Summarize completed work as a story, not a list. Group related completions.
 - **Next Week**: Prioritize by impact, not just Jira priority field.
-- **What Is Blocked**: For each blocker, infer the likely cause from the issue description and suggest who might unblock it.
-- **Risks**: Identify risks by analyzing patterns -- e.g., multiple blocked items in one area, items with no assignee, overdue dates, stalled in-progress items.
-- **Decisions Needed**: Infer from blockers and risks what decisions leadership needs to make.
-- **Team Health**: Note if workload looks uneven (one person assigned too many items), if velocity seems low, or if blocked items are piling up. Ask the user to confirm or adjust.
-- **Deep Dive**: For each major initiative, provide a meaningful status narrative, not just percentages.
+- **What Is Blocked**: For each blocker, infer the likely cause from description and suggest who might unblock it.
+- **Risks**: Identify risks by analyzing patterns:
+  - Multiple blocked items in one area
+  - Items with no assignee
+  - Overdue dates
+  - Stalled in-progress items
+- **Decisions Needed**: Infer from blockers and risks what decisions leadership needs.
+- **Team Health**: Note if:
+  - Workload looks uneven (one person assigned too many items)
+  - Velocity seems low
+  - Blocked items are piling up
+  - Ask the user to confirm or adjust
+- **Deep Dive**: For each major initiative, provide meaningful status narrative, not just percentages.
 
-**If a previous report exists** in the output directory, read it and note:
+### Compare with Previous Report
+
+If a previous report exists in the output directory, read it and note:
 - What changed since last week (new completions, new blockers, resolved blockers)
 - Whether status improved or degraded
 - Include a brief "Changes from Last Week" note where relevant
 
-Save the report as `TEAM_NAME_Weekly_Update_YYYY-MM-DD.md` in the output directory.
+**Save report as:** `TEAM_NAME_Weekly_Update_YYYY-MM-DD.md` in output directory.
 
 ## Step 4: Review with the User
 
@@ -99,18 +121,18 @@ Make edits based on their feedback.
 Once the user approves the report:
 
 ```bash
+cd ~/.claude/skills/weekly-jira-report
 uv run scripts/convert_and_upload.py \
-  --output-dir "OUTPUT_DIR" \
-  --team "TEAM_NAME" \
-  --drive-path "DRIVE_FOLDER_PATH" \
-  --drive-url "DRIVE_FOLDER_URL" \
-  [--shared-drive]
+  --output-dir "$OUTPUT_DIR" \
+  --team "$TEAM_NAME" \
+  --drive-path "$DRIVE_FOLDER_PATH" \
+  --drive-url "$DRIVE_FOLDER_URL" \
+  $([ "$USE_SHARED_DRIVE" = "true" ] && echo "--shared-drive")
 ```
-
-Skip this step if the user declined Google Drive upload in Step 1.
 
 ## Prerequisites
 
-- `acli` -- authenticated (`acli jira auth`)
-- `rclone` -- configured with a Google Drive remote (`rclone config`)
-- `uv` -- Python package manager (for the HTML conversion script)
+- `jq` - JSON processor for parsing Jira responses
+- `uv` - Python package manager (for HTML conversion)
+- `rclone` - configured with Google Drive remote (`gdrive:`)
+- Jira API token (create at: https://id.atlassian.com/manage-profile/security/api-tokens)

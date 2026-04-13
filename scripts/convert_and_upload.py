@@ -44,7 +44,7 @@ def upload_to_drive(file_path: str, drive_path: str, drive_url: str, shared_driv
 
         upload_cmd = ["rclone", "copy", file_path, f"{gdrive_remote}:{drive_path}"]
         if shared_drive:
-            upload_cmd.append("--drive-team-drive")
+            upload_cmd.append("--drive-shared-with-me")
             print(f"\nUploading to Shared Drive via rclone ({gdrive_remote})...")
         else:
             print(f"\nUploading to Google Drive via rclone ({gdrive_remote})...")

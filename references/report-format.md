@@ -1,104 +1,104 @@
 # Weekly Report Format Reference
 
-Use this as the template structure when writing the report. Adapt section content using your judgment -- don't fill sections mechanically.
+**Target Audience:** Managers who need to make decisions in 2 minutes.
+
+**Design Principle:** Actions first, context second. Front-load what the reader needs to *do*, then provide supporting detail.
 
 ## Report Template
 
 ```markdown
 # Weekly TEAM_NAME Update – Month DD, YYYY
 
-## Overall Status
-🟢 On Track
-🟠 At Risk / Delay
-🔴 Off Track
+## 1. Status Line
+🟢 On Track | 🟠 At Risk | 🔴 Off Track
 
-**Current Status:** [Your assessed status with emoji]
-*X% Completed, Y% In Progress, Z% Planned*
+**Status:** [emoji] [One sentence: what's the overall state and why]
 
-## This Week – What Actually Happened (🟢 Completed only)
-
-[Summarize completed work. Group related items. Tell the story of what got done, not just a raw list.]
-
-- [KEY](link) - Summary (Assignee: Name)
-  *Brief context on why this matters*
-
-## Next Week – What Will Be Delivered (Planned & In Progress ⚪)
-
-**Priority Order (Highest to Lowest):**
-
-[Prioritize by actual impact, not just Jira priority field.]
-
-- [KEY](link) - Summary (Assignee: Name)
-
-## What Is Blocked
-
-[For each blocker, explain the likely cause and suggest who might unblock it.]
-
-- [KEY](link) - Summary (Assignee: Name)
-  - **Blocker:** [Inferred from issue data]
-  - **Owner to unblock:** [Best guess based on context]
-
-## Risks
-
-[Identify from patterns: clusters of blocked items, missing assignees, overdue dates, stalled work.]
-
-- Risk 1: [Specific, actionable risk with evidence]
-- Risk 2: [Specific, actionable risk with evidence]
-
-## Decisions Needed From Me
-
-[Infer from blockers and risks what leadership needs to decide.]
-
-- Decision 1: [Specific decision with context]
-
-## Team Health / Notes
-
-[Note workload distribution, velocity trends, blocked item accumulation. Ask user to confirm.]
-
-- Overall team health: [Your assessment]
-- Key notes: [Observations]
+*Progress: X% Completed • Y% In Progress • Z% Planned*
 
 ---
 
-## Deep Dive – Major Work & End Goals
+## 2. Decisions Needed
 
-### Initiative Name ([KEY](link))
-**Target Delivery Date:** YYYY-MM-DD
-**Priority:** [emoji] Priority
-**Status:** [emoji] Status
+[Max 3 decisions. One line each. These should be yes/no or choice questions.]
 
-🟢 X% Completed  🔄 Y% In progress  ⚪ Z% Planned
+1. **[Decision topic]** – [Brief context, 1-2 sentences max]
+2. **[Decision topic]** – [Brief context]
 
-[Write a brief narrative about where this initiative stands, not just numbers.]
+If no decisions needed, write "None at this time."
 
-| Date | Original Target | Updated Target | Change Summary | Impact | Owner |
-|------|----------------|----------------|----------------|---------|-------|
-| TBD | TBD | TBD | TBD | TBD | TBD |
+---
 
-**Sub-tasks (N total):**
+## 3. Risks & Actions
 
-*Completed (X):*
-- [KEY](link) - Summary (Assignee: Name)
+[Table format for quick scanning. Max 5 risks.]
 
-*In Progress (Y):*
-- [KEY](link) - Summary (Assignee: Name)
+| Risk | Impact | Recommended Action |
+|------|--------|-------------------|
+| [Specific risk with data] | [What breaks if unfixed] | [Who does what] |
+| Nati owns 38% of initiatives | Bottleneck, delays if unavailable | Redistribute 2-3 items to others |
+| No completions in 3 days | Possible blockers or scope issues | Sprint review to identify blockers |
 
-*Blocked (Z):*
-- [KEY](link) - Summary (Assignee: Name)
+**Team Health Note:** [1-2 sentences on workload distribution, velocity trends, or morale. Skip if nothing notable.]
+
+---
+
+## 4. Completed This Week
+
+[Only items completed during this reporting period. If none, write "No completions this week." Do NOT list old completions.]
+
+- **[KEY](link)** – Summary (Owner: Name)  
+  *[One line: why this matters or what it unblocks]*
+
+---
+
+## 5. Shipping Next Week
+
+[Max 5 items. What will *actually* ship, not everything in the backlog. Prioritize by impact.]
+
+1. **[KEY](link)** – Summary (Owner: Name)
+2. **[KEY](link)** – Summary (Owner: Name)
+
+---
+
+## 6. Blocked
+
+[Only if blockers exist. For each, state the blocker and who can unblock.]
+
+- **[KEY](link)** – Summary (Owner: Name)  
+  **Blocker:** [Specific reason]  
+  **Action:** [Who needs to do what]
+
+If nothing blocked, omit this section entirely.
+
+---
+
+## Appendix: Initiative Details
+
+[Collapsible/optional reading. Deep dive on major initiatives. Keep each to 3-4 sentences max.]
+
+### [Initiative Name] ([KEY](link))
+**Target:** YYYY-MM-DD • **Priority:** [emoji] • **Status:** [emoji] [Brief status phrase]
+
+*Progress: X% done, Y% in progress, Z% planned*
+
+[2-3 sentences on current state, next milestone, any concerns. Skip sub-task lists unless critical to understanding.]
 
 ---
 ```
 
-## Issue Categorization
+---
+
+## Reference: Issue Categorization
 
 | Jira Status | Category |
 |-------------|----------|
 | Done, Closed | Completed |
-| In Progress, Review | In Progress |
+| In Progress, In Review | In Progress |
 | Blocked | Blocked |
 | Everything else | Planned |
 
-## Priority Emoji Mapping
+## Reference: Priority Emoji Mapping
 
 | Priority | Emoji |
 |----------|-------|
@@ -106,10 +106,65 @@ Use this as the template structure when writing the report. Adapt section conten
 | Medium | 🟠 |
 | Low / Lowest | 🟢 |
 
-## Status Emoji Mapping
+## Reference: Overall Status Logic
 
 | Condition | Status | Emoji |
 |-----------|--------|-------|
-| Blocked items exist | Off Track | 🔴 |
-| >60% in progress or more in-progress than completed | At Risk | 🟠 |
-| Default | On Track | 🟢 |
+| Multiple blockers OR critical blocker | Off Track | 🔴 |
+| >60% in progress with low completion OR workload imbalance | At Risk | 🟠 |
+| Making steady progress, no major concerns | On Track | 🟢 |
+
+**Use judgment:** A minor blocker doesn't automatically mean Off Track. Context matters.
+
+---
+
+## Writing Guidelines
+
+### Section 1: Status Line
+- **One sentence** summarizing the current state
+- Good: "On track - 3 initiatives shipping this week, Dev Preview pipeline staffing in progress"
+- Bad: "Overall status is good. We have made progress on several items."
+
+### Section 2: Decisions Needed
+- Frame as **questions requiring a yes/no or choice**
+- Include just enough context to make the decision (1-2 sentences)
+- If a decision was already covered in Risks, don't repeat it here
+
+### Section 3: Risks & Actions
+- **Be specific:** "Nati owns 38% of initiatives" not "workload imbalance"
+- **Quantify impact:** "Delays if unavailable" not "might cause issues"
+- **Actionable:** "Redistribute 2-3 items" not "monitor situation"
+- **Table format** for fast scanning - keep cells concise
+
+### Section 4: Completed This Week
+- **Only items completed during this reporting period**
+- If nothing completed, write "No completions this week" and move on
+- **Never** list items completed in previous weeks under "This Week"
+
+### Section 5: Shipping Next Week
+- **Max 5 items** - if you have 14 items, you're listing the entire backlog
+- What will **actually ship**, not what's theoretically in progress
+- Prioritize by business impact, not Jira priority field
+
+### Section 6: Blocked
+- Omit entirely if nothing is blocked (don't write "None")
+- For each blocker: specific reason + who can unblock
+- Group related blockers to reduce line count
+
+### Appendix: Initiative Details
+- This is **optional reading** - most managers will skip it
+- 3-4 sentences max per initiative
+- Skip sub-task lists unless critical to understanding
+- Focus on: where we are, what's next, any concerns
+
+---
+
+## What NOT to Include
+
+❌ **"Changes from Last Week"** - readers can see what's new by reading the sections  
+❌ **Summary section at the bottom** - redundant, readers already know the status  
+❌ **Sub-task breakdowns in the main body** - move to appendix  
+❌ **Old completions under "This Week"** - misleading  
+❌ **Every open item under "Next Week"** - that's a backlog dump, not a plan  
+❌ **Generic risks** - "timeline may slip" is not a risk without specifics  
+❌ **Process notes** - "we had a meeting" doesn't belong unless it yielded a decision

@@ -1,9 +1,0 @@
-[project]
-name = "weekly-jira-report"
-version = "1.0.0"
-description = "Convert weekly team status reports to HTML and upload to Google Drive"
-requires-python = ">=3.10"
-license = "MIT"
-dependencies = [
-    "markdown2",
-]

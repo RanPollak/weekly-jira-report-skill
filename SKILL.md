@@ -14,9 +14,6 @@ Check for configuration file at `~/.claude/skills/weekly-jira-report/weekly_repo
 
 ```json
 {
-  "JIRA_URL": "https://your-company.atlassian.net",
-  "EMAIL": "your@email.com",
-  "API_TOKEN": "your-jira-api-token",
   "START_ISSUE": "PROJECT-123",
   "TEAM_NAME": "Your Team",
   "OUTPUT_DIR": "~/weekly-reports",
@@ -26,35 +23,35 @@ Check for configuration file at `~/.claude/skills/weekly-jira-report/weekly_repo
 }
 ```
 
+**Note:** Jira authentication is handled separately via `jira init` (run once during setup).
+
 If values are missing or placeholders, ask the user.
 
-## Step 2: Fetch Jira Data via REST API
+## Step 2: Fetch Jira Data via jira-cli
 
-Use curl to fetch data directly from Jira. Authenticate with Basic Auth (email:api_token in base64).
+Use jira-cli to fetch data from Jira. Authentication is handled automatically via `jira init`.
 
 **Fetch root issue:**
 ```bash
-curl -s -u "$EMAIL:$API_TOKEN" \
-  "$JIRA_URL/rest/api/3/issue/$ISSUE_KEY" | jq .
+jira issue view "$ISSUE_KEY" --plain --comments 0
 ```
 
 **Fetch child issues (initiatives):**
 ```bash
-curl -s -u "$EMAIL:$API_TOKEN" \
-  "$JIRA_URL/rest/api/3/search?jql=parent=$ISSUE_KEY&maxResults=100&fields=key,summary,status,assignee,issuetype,priority" | jq .
+jira issue list --parent "$ISSUE_KEY" --plain --columns KEY,SUMMARY,STATUS,ASSIGNEE,TYPE,PRIORITY
 ```
 
 **For each initiative, fetch sub-tasks:**
 ```bash
-curl -s -u "$EMAIL:$API_TOKEN" \
-  "$JIRA_URL/rest/api/3/search?jql=parent=$INITIATIVE_KEY&maxResults=100&fields=key,summary,status,assignee,issuetype,priority" | jq .
+jira issue list --parent "$INITIATIVE_KEY" --plain --columns KEY,SUMMARY,STATUS,ASSIGNEE,TYPE,PRIORITY
 ```
 
 **For deeper analysis**, fetch individual issues:
 ```bash
-curl -s -u "$EMAIL:$API_TOKEN" \
-  "$JIRA_URL/rest/api/3/issue/$ISSUE_KEY?fields=summary,status,description" | jq .
+jira issue view "$ISSUE_KEY" --plain --comments 0
 ```
+
+**Note:** jira-cli automatically handles pagination, so you don't need to worry about maxResults limits.
 
 ## Step 3: Analyze and Write the Report
 
@@ -80,30 +77,41 @@ Compute percentages: completed / in-progress / planned
 
 ### Write Report Following `references/report-format.md`
 
+**Target audience:** Managers who need to make decisions in 2 minutes.
+
+**Structure:** Actions first, context second. The format prioritizes:
+1. **Status Line** - One sentence summary
+2. **Decisions Needed** - Max 3, one line each
+3. **Risks & Actions** - Table format for quick scanning
+4. **Completed This Week** - Only this week's completions (not old ones!)
+5. **Shipping Next Week** - Max 5 items that will actually ship
+6. **Blocked** - Specific blockers with owners to unblock
+7. **Appendix** - Initiative deep dives (optional reading)
+
 **Key sections where you reason, not just copy:**
 
-- **This Week**: Summarize completed work as a story, not a list. Group related completions.
-- **Next Week**: Prioritize by impact, not just Jira priority field.
-- **What Is Blocked**: For each blocker, infer the likely cause from description and suggest who might unblock it.
-- **Risks**: Identify risks by analyzing patterns:
-  - Multiple blocked items in one area
-  - Items with no assignee
-  - Overdue dates
-  - Stalled in-progress items
-- **Decisions Needed**: Infer from blockers and risks what decisions leadership needs.
-- **Team Health**: Note if:
-  - Workload looks uneven (one person assigned too many items)
-  - Velocity seems low
-  - Blocked items are piling up
-  - Ask the user to confirm or adjust
-- **Deep Dive**: For each major initiative, provide meaningful status narrative, not just percentages.
+- **Status Line**: One clear sentence explaining the overall state. Not generic.
+- **Decisions Needed**: Frame as questions. Max 3. Only include if leadership genuinely needs to decide something.
+- **Risks & Actions**: Use table format. Be specific with data ("Nati owns 38%" not "uneven workload"). Include recommended action.
+- **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions.
+- **Shipping Next Week**: Max 5 items. What will actually ship, not everything in-progress. If you have 14 items, you're dumping the backlog.
+- **Blocked**: Specific blocker + who can unblock. Omit section if nothing blocked.
+- **Appendix**: 3-4 sentences per initiative. Skip sub-task lists unless critical.
+
+**Identify risks by analyzing patterns:**
+- Workload concentration (one person owns >30% of items)
+- No completions in several days
+- Multiple blockers in same area
+- Items with no assignee
+- Overdue dates or stalled in-progress items
 
 ### Compare with Previous Report
 
-If a previous report exists in the output directory, read it and note:
-- What changed since last week (new completions, new blockers, resolved blockers)
-- Whether status improved or degraded
-- Include a brief "Changes from Last Week" note where relevant
+If a previous report exists in the output directory, read it to inform your analysis:
+- Identify new completions vs. what was completed before
+- Note new blockers or resolved blockers
+- Track whether status improved or degraded
+- **Do NOT create a "Changes from Last Week" section** - readers can see changes by reading the structured sections
 
 **Save report as:** `TEAM_NAME_Weekly_Update_YYYY-MM-DD.md` in output directory.
 
@@ -132,7 +140,8 @@ uv run scripts/convert_and_upload.py \
 
 ## Prerequisites
 
-- `jq` - JSON processor for parsing Jira responses
+- [`jira-cli`](https://github.com/ankitpokhrel/jira-cli) - Modern Jira CLI tool
+  - Install: `brew install ankitpokhrel/jira-cli/jira-cli` (macOS) or see installation docs for other platforms
+  - Configure: `jira init` (interactive setup with your Jira instance)
 - `uv` - Python package manager (for HTML conversion)
 - `rclone` - configured with Google Drive remote (`gdrive:`)
-- Jira API token (create at: https://id.atlassian.com/manage-profile/security/api-tokens)

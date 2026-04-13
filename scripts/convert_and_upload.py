@@ -44,7 +44,7 @@ def upload_to_drive(file_path: str, drive_path: str, drive_url: str, shared_driv
 
         upload_cmd = ["rclone", "copy", file_path, f"{gdrive_remote}:{drive_path}"]
         if shared_drive:
-            upload_cmd.append("--drive-shared-with-me")
+            upload_cmd.append("--drive-team-drive")
             print(f"\nUploading to Shared Drive via rclone ({gdrive_remote})...")
         else:
             print(f"\nUploading to Google Drive via rclone ({gdrive_remote})...")
@@ -77,7 +77,7 @@ def convert_to_html(report_file: str, output_file: str, team_name: str) -> str:
     """Convert markdown report to styled HTML."""
     if not os.path.exists(report_file):
         print(f"Report file not found: {report_file}", file=sys.stderr)
-        print("  Run generate_report.py first to create the markdown file.", file=sys.stderr)
+        print("  Generate the markdown report first using the weekly-jira-report skill.", file=sys.stderr)
         sys.exit(1)
 
     with open(report_file, "r") as f:
@@ -176,7 +176,7 @@ def main():
         description="Convert weekly update markdown to HTML and upload to Google Drive."
     )
     parser.add_argument("--output-dir", required=True, help="Directory containing the markdown report")
-    parser.add_argument("--team", required=True, help="Team name (must match generate_report.py)")
+    parser.add_argument("--team", required=True, help="Team name (must match the generated report)")
     parser.add_argument("--drive-path", required=True, help="rclone destination path on Google Drive")
     parser.add_argument("--drive-url", required=True, help="Google Drive folder URL for sharing")
     parser.add_argument("--shared-drive", action="store_true", help="Upload to a Shared Drive")

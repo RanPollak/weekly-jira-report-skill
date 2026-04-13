@@ -1,6 +1,6 @@
 # Weekly Jira Report - Claude Code Skill
 
-An AI-native Claude Code skill that generates weekly team status reports from Jira. Claude fetches the data via `acli`, analyzes it, and writes the report using its own judgment -- not rigid templates.
+An AI-native Claude Code skill that generates weekly team status reports from Jira. Claude fetches the data via `jira-cli`, analyzes it, and writes the report using its own judgment -- not rigid templates.
 
 ## What Makes This AI-Native
 
@@ -16,7 +16,7 @@ The only script left is `convert_and_upload.py` for mechanical HTML conversion a
 
 ## Prerequisites
 
-- [acli](https://developer.atlassian.com/cloud/acli/) -- Atlassian CLI
+- [jira-cli](https://github.com/ankitpokhrel/jira-cli) -- Modern Jira CLI tool
 - [rclone](https://rclone.org/) -- for Google Drive uploads
 - [uv](https://docs.astral.sh/uv/) -- Python package manager (for HTML conversion)
 
@@ -33,11 +33,13 @@ Claude Code will automatically discover the skill.
 
 ### Setup
 
-#### 1. Authenticate acli
+#### 1. Configure jira-cli
 
 ```bash
-acli auth
+jira init
 ```
+
+Follow the interactive prompts to configure your Jira instance, authentication, and default project.
 
 #### 2. Configure rclone for Google Drive
 
@@ -69,7 +71,7 @@ Generate my weekly report
 
 Claude will:
 1. Ask you for the Jira issue key, team name, output directory, and Drive folder
-2. Fetch data from Jira using `acli`
+2. Fetch data from Jira using `jira-cli`
 3. Analyze the data and write a report with insights
 4. Present the draft for your review
 5. Convert to HTML and upload to Google Drive
@@ -79,9 +81,8 @@ Claude will:
 ```
 weekly-jira-report-skill/
 ├── SKILL.md                      # Skill manifest and workflow instructions
-├── pyproject.toml                # uv dependency management
 ├── scripts/
-│   └── convert_and_upload.py    # HTML conversion + rclone upload
+│   └── convert_and_upload.py    # HTML conversion + rclone upload (uses inline deps via PEP 723)
 └── references/
     └── report-format.md         # Report template and format reference
 ```
@@ -119,7 +120,7 @@ Use the `--shared-drive` flag. Important:
 A: The skill is designed for Claude Code. The `convert_and_upload.py` script can be run standalone, but the report generation relies on Claude's analysis.
 
 **Q: Will this work with Jira Cloud and Jira Server?**
-A: Yes for Jira Cloud via acli. Jira Server/Data Center may need different acli configuration.
+A: Yes for both Jira Cloud and Jira Server/Data Center via jira-cli. Configure the appropriate instance during `jira init`.
 
 **Q: Does this modify my Jira data?**
 A: No, it's read-only. It only fetches data, never writes to Jira.

@@ -1,9 +1,9 @@
 ---
-name: weekly-jira-report
+name: weekly-jira-report-skill
 description: >-
-  AI-native weekly team status report generator from Jira. Claude fetches data via Jira REST API,
-  analyzes it with judgment, and writes meaningful reports. Use when the user asks to 'generate
-  a weekly report', 'create a team status update', or 'make my weekly update'.
+  Use when the user asks to 'generate a weekly report', 'create a team status update',
+  'make my weekly update', or 'write a Jira status report'. Fetches Jira data via jira-cli,
+  analyzes with AI judgment, and produces meaningful narrative reports (not mechanical templates).
 ---
 
 # Weekly Jira Report Generator (AI-Native)
@@ -26,6 +26,11 @@ Check for configuration file at `~/.claude/skills/weekly-jira-report/weekly_repo
 **Note:** Jira authentication is handled separately via `jira init` (run once during setup).
 
 If values are missing or placeholders, ask the user.
+
+**Security: Validate configuration values before use**
+- Ensure paths contain no shell metacharacters (`;`, `|`, `&`, `$()`, etc.)
+- Quote all variables in shell commands: `"$VAR"` not `$VAR`
+- If any value looks suspicious, reject and ask user to fix config file
 
 ## Step 2: Fetch Jira Data via jira-cli
 
@@ -75,7 +80,39 @@ Compute percentages: completed / in-progress / planned
 - Otherwise → On Track (🟢)
 - **Use judgment** - minor blockers may not mean Off Track
 
-### Write Report Following `references/report-format.md`
+### Write Report Following Standard Format
+
+**Report structure** (also in `references/report-format.md` if available):
+
+```markdown
+# Weekly TEAM_NAME Update – Month DD, YYYY
+
+## Overall Status
+🟢 On Track | 🟠 At Risk | 🔴 Off Track
+
+**Current Status:** [One sentence explaining state]
+*X% Completed, Y% In Progress, Z% Planned*
+
+## Decisions Needed From Me
+[Max 3, framed as questions. Omit if none.]
+
+## Risks & Actions
+| Risk | Data | Recommended Action |
+|------|------|-------------------|
+| [Specific risk] | [Evidence] | [Action] |
+
+## Completed This Week (🟢)
+[ONLY items completed during this reporting period]
+
+## Shipping Next Week (⚪)
+[Max 5 items that will actually ship]
+
+## Blocked (if any)
+[Specific blocker + who can unblock]
+
+## Appendix – Initiative Deep Dives
+[3-4 sentences per initiative, skip sub-task lists unless critical]
+```
 
 **Target audience:** Managers who need to make decisions in 2 minutes.
 
@@ -145,3 +182,66 @@ uv run scripts/convert_and_upload.py \
   - Configure: `jira init` (interactive setup with your Jira instance)
 - `uv` - Python package manager (for HTML conversion)
 - `rclone` - configured with Google Drive remote (`gdrive:`)
+
+## Error Handling
+
+**When jira-cli fails:**
+- Authentication errors: Re-run `jira init` to reconfigure credentials
+- Network errors: Check VPN connection, verify Jira URL is reachable
+- Issue not found: Verify START_ISSUE key is correct and you have access
+- Rate limiting: jira-cli handles this automatically with retries
+
+**When config file issues occur:**
+- File missing: Create template and ask user to fill values
+- Malformed JSON: Show parsing error, ask user to fix syntax
+- Missing required fields: List which fields are missing
+
+**When convert_and_upload.py fails:**
+- `uv` not installed: Install with `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- `rclone` not configured: Run `rclone config` and create `gdrive` remote
+- Upload timeout: File may have uploaded successfully - check Drive folder
+- Permission denied: Verify user has write access to Shared Drive
+
+**General approach:**
+- Always check command exit codes before proceeding
+- Show the actual error message to user, don't just say "failed"
+- Provide actionable next steps for each failure mode
+
+## Common Mistakes / Gotchas
+
+**DON'T mechanically template the data** - this is the #1 mistake
+- ❌ Bad: Copy-paste each Jira summary into bullet points
+- ✅ Good: Group related work, write narrative, add context
+
+**DON'T use Jira priority field blindly**
+- ❌ Bad: Sort "Next Week" by Jira priority (may be outdated)
+- ✅ Good: Use judgment - what matters most RIGHT NOW for delivery?
+
+**DON'T skip comparison with previous report**
+- ❌ Bad: Generate fresh report ignoring what happened since last week
+- ✅ Good: Read previous report, note what changed (progress or regression)
+
+**DON'T pad "Completed This Week" with old completions**
+- ❌ Bad: Include items completed weeks ago to make section look full
+- ✅ Good: ONLY include items completed during this reporting period
+
+**DON'T dump the backlog into "Shipping Next Week"**
+- ❌ Bad: List all 14 in-progress items
+- ✅ Good: Max 5 items that will actually ship next week
+
+**DON'T infer risks from single data points**
+- ❌ Bad: One blocked item → "We're off track"
+- ✅ Good: Look for patterns - clusters, trends, accumulation over time
+
+**DON'T forget to validate shell variables**
+- ❌ Bad: Use `$OUTPUT_DIR` directly in commands
+- ✅ Good: Quote variables: `"$OUTPUT_DIR"` and validate no metacharacters
+
+**DO expand ~ in paths** before using in shell commands
+- ❌ Bad: Pass `~/weekly-reports` to Python script (some tools don't expand ~)
+- ✅ Good: Use `os.path.expanduser()` or `${HOME}/weekly-reports`
+
+**DO check prerequisites before running** - saves time vs debugging failures
+- Verify `jira-cli`, `uv`, `rclone` are installed
+- Test `jira-cli` with simple command: `jira issue list --limit 1`
+- Test `rclone listremotes` shows configured remote

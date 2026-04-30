@@ -26,7 +26,7 @@ The only script left is `convert_and_upload.py` for mechanical HTML conversion a
 
 ```bash
 cd ~/.claude/skills
-git clone https://github.com/RanPollak/weekly-jira-report-skill.git weekly-jira-report
+git clone https://github.com/RanPollak/weekly-jira-report-skill.git weekly-jira-report-skill
 ```
 
 Claude Code will automatically discover the skill.
@@ -81,11 +81,20 @@ Claude will:
 ```
 weekly-jira-report-skill/
 ├── SKILL.md                      # Skill manifest and workflow instructions
+├── weekly_report.local.json      # Configuration (create this)
 ├── scripts/
 │   └── convert_and_upload.py    # HTML conversion + rclone upload (uses inline deps via PEP 723)
 └── references/
     └── report-format.md         # Report template and format reference
 ```
+
+## Features
+
+✅ **Security-first**: Configuration validation prevents command injection  
+✅ **Error handling**: Clear guidance for jira-cli failures, auth issues, and missing prerequisites  
+✅ **AI judgment**: Pattern recognition for risks, not mechanical templates  
+✅ **Comprehensive**: Inlined report format with fallback to reference file  
+✅ **Tested**: Passes skilleval validation with deep checks
 
 ## Report Sections
 

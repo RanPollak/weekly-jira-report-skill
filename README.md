@@ -58,7 +58,7 @@ rclone config
 Test the connection:
 
 ```bash
-rclone lsd gdrive:
+rclone ls gdrive:
 ```
 
 ## Usage

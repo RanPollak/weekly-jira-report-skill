@@ -9,23 +9,20 @@
 ```markdown
 # Weekly TEAM_NAME Update – Month DD, YYYY
 
-## 1. Status Line
+## 1. Summary
 🟢 On Track | 🟠 At Risk | 🔴 Off Track
 
-**Status:** [emoji] [One sentence: what's the overall state and why]
+**Current Status:** [One sentence with key highlights, workload distribution notes]
 
-*Progress: X% Completed • Y% In Progress • Z% Planned*
+*X% Completed • Y% In Progress • Z% Planned*
 
 ---
 
-## 2. Decisions Needed
+## 2. Team Celebrations / WIN
 
-[Max 3 decisions. One line each. These should be yes/no or choice questions.]
-
-1. **[Decision topic]** – [Brief context, 1-2 sentences max]
-2. **[Decision topic]** – [Brief context]
-
-If no decisions needed, write "None at this time."
+- **[Team Member Name]** – [Achievement with specifics]. [Impact or key details]. [Issue key if applicable].
+- **[Team Member Name]** – [Achievement with specifics]. [Impact or key details]. [Issue key if applicable].
+- **[Team Member Name]** – [Achievement with specifics]. [Impact or key details]. [Issue key if applicable].
 
 ---
 
@@ -33,13 +30,13 @@ If no decisions needed, write "None at this time."
 
 [Table format for quick scanning. Max 5 risks.]
 
-| Risk | Impact | Recommended Action |
-|------|--------|-------------------|
-| [Specific risk with data] | [What breaks if unfixed] | [Who does what] |
-| Nati owns 38% of initiatives | Bottleneck, delays if unavailable | Redistribute 2-3 items to others |
-| No completions in 3 days | Possible blockers or scope issues | Sprint review to identify blockers |
+| Risk | Data | Recommended Action |
+|------|------|-------------------|
+| [Specific risk] | [Evidence with numbers] | [Who does what] |
+| Workload concentration | Nati owns 38% of initiatives | Redistribute 2-3 items to others by mid-May |
+| Forecast slippage | 3 of 4 forecasted items didn't ship | Review estimation - are we over-committing? |
 
-**Team Health Note:** [1-2 sentences on workload distribution, velocity trends, or morale. Skip if nothing notable.]
+**Team Health Note:** [Workload distribution metrics, velocity trends, completion momentum. 2-3 sentences.]
 
 ---
 
@@ -47,8 +44,7 @@ If no decisions needed, write "None at this time."
 
 [Only items completed during this reporting period. If none, write "No completions this week." Do NOT list old completions.]
 
-- **[KEY](link)** – Summary (Owner: Name)  
-  *[One line: why this matters or what it unblocks]*
+1. **[KEY](link)** – [Title] ([Owner]) - [Brief description with key details]
 
 ---
 
@@ -56,24 +52,11 @@ If no decisions needed, write "None at this time."
 
 [Max 5 items. What will *actually* ship, not everything in the backlog. Prioritize by impact.]
 
-1. **[KEY](link)** – Summary (Owner: Name)
-2. **[KEY](link)** – Summary (Owner: Name)
+1. **[KEY](link)** – [Title] ([Owner, deadline if applicable])
 
 ---
 
-## 6. Blocked
-
-[Only if blockers exist. For each, state the blocker and who can unblock.]
-
-- **[KEY](link)** – Summary (Owner: Name)  
-  **Blocker:** [Specific reason]  
-  **Action:** [Who needs to do what]
-
-If nothing blocked, omit this section entirely.
-
----
-
-## Appendix: Initiative Details
+## Appendix – Initiative Deep Dives
 
 [Collapsible/optional reading. Deep dive on major initiatives. Keep each to 3-4 sentences max.]
 
@@ -120,51 +103,58 @@ If nothing blocked, omit this section entirely.
 
 ## Writing Guidelines
 
-### Section 1: Status Line
-- **One sentence** summarizing the current state
-- Good: "On track - 3 initiatives shipping this week, Dev Preview pipeline staffing in progress"
+### Section 1: Summary
+- **One sentence** with key highlights and positive framing when appropriate
+- Include workload distribution improvements if notable
+- Good: "Strong completions this week - POCExplorer video demo shipped, OpenShift deployment plan delivered. Workload distribution excellent: Gerald 27%, Nati 27%"
 - Bad: "Overall status is good. We have made progress on several items."
 
-### Section 2: Decisions Needed
-- Frame as **questions requiring a yes/no or choice**
-- Include just enough context to make the decision (1-2 sentences)
-- If a decision was already covered in Risks, don't repeat it here
+### Section 2: Team Celebrations / WIN
+- **ALWAYS include** - recognize 2-4 team members for achievements this week
+- Use **bold for names** to make them stand out
+- Be **specific with details**: issue keys, completion dates, technical achievements, impact
+- **Celebrate wins, not just completions** - what was hard about this? What did it enable?
+- Good: "**Roy Belio** – POCExplorer Video Demo shipped! 3-minute showcase complete, closed May 6, meeting EOW May 8 deadline early."
+- Bad: "Roy completed his task."
 
 ### Section 3: Risks & Actions
 - **Be specific:** "Nati owns 38% of initiatives" not "workload imbalance"
-- **Quantify impact:** "Delays if unavailable" not "might cause issues"
-- **Actionable:** "Redistribute 2-3 items" not "monitor situation"
+- **Quantify with data:** Use percentages, counts, dates
+- **Actionable:** "Redistribute 2-3 items by mid-May" not "monitor situation"
 - **Table format** for fast scanning - keep cells concise
+- End with **Team Health Note**: workload distribution, velocity trends, team observations (2-3 sentences)
+- **Blockers go in this table**, not a separate section
 
 ### Section 4: Completed This Week
 - **Only items completed during this reporting period**
 - If nothing completed, write "No completions this week" and move on
 - **Never** list items completed in previous weeks under "This Week"
+- Format: `1. **[KEY](link)** – [Title] ([Owner]) - [Brief description]`
 
 ### Section 5: Shipping Next Week
 - **Max 5 items** - if you have 14 items, you're listing the entire backlog
 - What will **actually ship**, not what's theoretically in progress
 - Prioritize by business impact, not Jira priority field
+- Include owner and deadline if known
 
-### Section 6: Blocked
-- Omit entirely if nothing is blocked (don't write "None")
-- For each blocker: specific reason + who can unblock
-- Group related blockers to reduce line count
-
-### Appendix: Initiative Details
+### Appendix: Initiative Deep Dives
 - This is **optional reading** - most managers will skip it
 - 3-4 sentences max per initiative
 - Skip sub-task lists unless critical to understanding
 - Focus on: where we are, what's next, any concerns
+- Use emoji indicators (🟢/🟡/🔴) for visual status
 
 ---
 
 ## What NOT to Include
 
+❌ **"Decisions Needed From Me"** - removed from standard format, handle through other channels  
+❌ **Separate "Blocked" section** - blockers go in the Risks & Actions table  
 ❌ **"Changes from Last Week"** - readers can see what's new by reading the sections  
 ❌ **Summary section at the bottom** - redundant, readers already know the status  
 ❌ **Sub-task breakdowns in the main body** - move to appendix  
 ❌ **Old completions under "This Week"** - misleading  
 ❌ **Every open item under "Next Week"** - that's a backlog dump, not a plan  
 ❌ **Generic risks** - "timeline may slip" is not a risk without specifics  
-❌ **Process notes** - "we had a meeting" doesn't belong unless it yielded a decision
+❌ **Process notes** - "we had a meeting" doesn't belong unless it yielded a decision  
+❌ **Generic celebrations** - "Good job team!" instead of specific achievements with names and details

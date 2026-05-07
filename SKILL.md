@@ -87,53 +87,73 @@ Compute percentages: completed / in-progress / planned
 ```markdown
 # Weekly TEAM_NAME Update – Month DD, YYYY
 
-## Overall Status
+## 1. Summary
 🟢 On Track | 🟠 At Risk | 🔴 Off Track
 
-**Current Status:** [One sentence explaining state]
-*X% Completed, Y% In Progress, Z% Planned*
+**Current Status:** [One sentence explaining state with key highlights]
 
-## Decisions Needed From Me
-[Max 3, framed as questions. Omit if none.]
+*X% Completed • Y% In Progress • Z% Planned*
 
-## Risks & Actions
+---
+
+## 2. Team Celebrations / WIN
+
+- **[Team Member Name]** – [Achievement description with specifics and impact]
+- **[Team Member Name]** – [Achievement description with specifics and impact]
+- **[Team Member Name]** – [Achievement description with specifics and impact]
+
+---
+
+## 3. Risks & Actions
+
 | Risk | Data | Recommended Action |
 |------|------|-------------------|
 | [Specific risk] | [Evidence] | [Action] |
 
-## Completed This Week (🟢)
-[ONLY items completed during this reporting period]
+**Team Health Note:** [Workload distribution metrics, velocity trends, any team-level observations]
 
-## Shipping Next Week (⚪)
-[Max 5 items that will actually ship]
+---
 
-## Blocked (if any)
-[Specific blocker + who can unblock]
+## 4. Completed This Week
+
+1. **[ISSUE-KEY](link)** – [Title] ([Owner]) - [Brief description with key details]
+
+---
+
+## 5. Shipping Next Week
+
+1. **[ISSUE-KEY](link)** – [Title] ([Owner, deadline if applicable])
+
+---
 
 ## Appendix – Initiative Deep Dives
-[3-4 sentences per initiative, skip sub-task lists unless critical]
+
+### [Initiative Name] ([ISSUE-KEY](link))
+**Owner:** [Name] • **Priority:** [Priority] • **Status:** 🟢/🟡/🔴 [Status]
+
+[3-4 sentences describing current state, progress, and next steps. Skip sub-task lists unless critical.]
+
+---
 ```
 
 **Target audience:** Managers who need to make decisions in 2 minutes.
 
-**Structure:** Actions first, context second. The format prioritizes:
-1. **Status Line** - One sentence summary
-2. **Decisions Needed** - Max 3, one line each
-3. **Risks & Actions** - Table format for quick scanning
+**Structure:** Numbered sections, celebrations before risks, actions-first approach. The format prioritizes:
+1. **Summary** - Status emoji, one sentence state, progress percentages
+2. **Team Celebrations / WIN** - ALWAYS include, recognize 2-4 team members for achievements this week
+3. **Risks & Actions** - Table format + Team Health Note paragraph
 4. **Completed This Week** - Only this week's completions (not old ones!)
 5. **Shipping Next Week** - Max 5 items that will actually ship
-6. **Blocked** - Specific blockers with owners to unblock
-7. **Appendix** - Initiative deep dives (optional reading)
+6. **Appendix** - Initiative deep dives (optional reading)
 
 **Key sections where you reason, not just copy:**
 
-- **Status Line**: One clear sentence explaining the overall state. Not generic.
-- **Decisions Needed**: Frame as questions. Max 3. Only include if leadership genuinely needs to decide something.
-- **Risks & Actions**: Use table format. Be specific with data ("Nati owns 38%" not "uneven workload"). Include recommended action.
-- **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions.
-- **Shipping Next Week**: Max 5 items. What will actually ship, not everything in-progress. If you have 14 items, you're dumping the backlog.
-- **Blocked**: Specific blocker + who can unblock. Omit section if nothing blocked.
-- **Appendix**: 3-4 sentences per initiative. Skip sub-task lists unless critical.
+- **Summary**: One clear sentence explaining the overall state with key highlights. Not generic. Include workload distribution improvements if notable.
+- **Team Celebrations / WIN**: ALWAYS include this section. Recognize 2-4 team members. Use bold for names. Be specific with achievements - include issue keys, completion dates, technical details, impact. Celebrate wins, not just completions.
+- **Risks & Actions**: Use table format. Be specific with data ("Nati owns 38%" not "uneven workload"). Include recommended action. End section with **Team Health Note** covering workload distribution, velocity trends, team observations.
+- **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions. Include issue links, owner name in parentheses, brief description.
+- **Shipping Next Week**: Max 5 items. What will actually ship, not everything in-progress. If you have 14 items, you're dumping the backlog. Include owner and deadline if known.
+- **Appendix**: 3-4 sentences per initiative. Skip sub-task lists unless critical. Use emoji indicators (🟢/🟡/🔴) for status at a glance.
 
 **Identify risks by analyzing patterns:**
 - Workload concentration (one person owns >30% of items)

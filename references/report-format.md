@@ -26,21 +26,7 @@
 
 ---
 
-## 3. Risks & Actions
-
-[Table format for quick scanning. Max 5 risks.]
-
-| Risk | Data | Recommended Action |
-|------|------|-------------------|
-| [Specific risk] | [Evidence with numbers] | [Who does what] |
-| Workload concentration | Nati owns 38% of initiatives | Redistribute 2-3 items to others by mid-May |
-| Forecast slippage | 3 of 4 forecasted items didn't ship | Review estimation - are we over-committing? |
-
-**Team Health Note:** [Workload distribution metrics, velocity trends, completion momentum. 2-3 sentences.]
-
----
-
-## 4. Completed This Week
+## 3. Completed This Week
 
 [Only items completed during this reporting period. If none, write "No completions this week." Do NOT list old completions.]
 
@@ -48,7 +34,7 @@
 
 ---
 
-## 5. Shipping Next Week
+## 4. Shipping Next Week
 
 [Max 5 items. What will *actually* ship, not everything in the backlog. Prioritize by impact.]
 
@@ -117,21 +103,13 @@
 - Good: "**Roy Belio** – POCExplorer Video Demo shipped! 3-minute showcase complete, closed May 6, meeting EOW May 8 deadline early."
 - Bad: "Roy completed his task."
 
-### Section 3: Risks & Actions
-- **Be specific:** "Nati owns 38% of initiatives" not "workload imbalance"
-- **Quantify with data:** Use percentages, counts, dates
-- **Actionable:** "Redistribute 2-3 items by mid-May" not "monitor situation"
-- **Table format** for fast scanning - keep cells concise
-- End with **Team Health Note**: workload distribution, velocity trends, team observations (2-3 sentences)
-- **Blockers go in this table**, not a separate section
-
-### Section 4: Completed This Week
+### Section 3: Completed This Week
 - **Only items completed during this reporting period**
 - If nothing completed, write "No completions this week" and move on
 - **Never** list items completed in previous weeks under "This Week"
 - Format: `1. **[KEY](link)** – [Title] ([Owner]) - [Brief description]`
 
-### Section 5: Shipping Next Week
+### Section 4: Shipping Next Week
 - **Max 5 items** - if you have 14 items, you're listing the entire backlog
 - What will **actually ship**, not what's theoretically in progress
 - Prioritize by business impact, not Jira priority field
@@ -149,7 +127,6 @@
 ## What NOT to Include
 
 ❌ **"Decisions Needed From Me"** - removed from standard format, handle through other channels  
-❌ **Separate "Blocked" section** - blockers go in the Risks & Actions table  
 ❌ **"Changes from Last Week"** - readers can see what's new by reading the sections  
 ❌ **Summary section at the bottom** - redundant, readers already know the status  
 ❌ **Sub-task breakdowns in the main body** - move to appendix  

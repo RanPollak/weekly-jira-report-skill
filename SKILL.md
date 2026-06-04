@@ -104,23 +104,13 @@ Compute percentages: completed / in-progress / planned
 
 ---
 
-## 3. Risks & Actions
-
-| Risk | Data | Recommended Action |
-|------|------|-------------------|
-| [Specific risk] | [Evidence] | [Action] |
-
-**Team Health Note:** [Workload distribution metrics, velocity trends, any team-level observations]
-
----
-
-## 4. Completed This Week
+## 3. Completed This Week
 
 1. **[ISSUE-KEY](link)** – [Title] ([Owner]) - [Brief description with key details]
 
 ---
 
-## 5. Shipping Next Week
+## 4. Shipping Next Week
 
 1. **[ISSUE-KEY](link)** – [Title] ([Owner, deadline if applicable])
 
@@ -138,29 +128,20 @@ Compute percentages: completed / in-progress / planned
 
 **Target audience:** Managers who need to make decisions in 2 minutes.
 
-**Structure:** Numbered sections, celebrations before risks, actions-first approach. The format prioritizes:
+**Structure:** Numbered sections, celebrations before completions. The format prioritizes:
 1. **Summary** - Status emoji, one sentence state, progress percentages
 2. **Team Celebrations / WIN** - ALWAYS include, recognize 2-4 team members for achievements this week
-3. **Risks & Actions** - Table format + Team Health Note paragraph
-4. **Completed This Week** - Only this week's completions (not old ones!)
-5. **Shipping Next Week** - Max 5 items that will actually ship
-6. **Appendix** - Initiative deep dives (optional reading)
+3. **Completed This Week** - Only this week's completions (not old ones!)
+4. **Shipping Next Week** - Max 5 items that will actually ship
+5. **Appendix** - Initiative deep dives (optional reading)
 
 **Key sections where you reason, not just copy:**
 
 - **Summary**: One clear sentence explaining the overall state with key highlights. Not generic. Include workload distribution improvements if notable.
 - **Team Celebrations / WIN**: ALWAYS include this section. Recognize 2-4 team members. Use bold for names. Be specific with achievements - include issue keys, completion dates, technical details, impact. Celebrate wins, not just completions.
-- **Risks & Actions**: Use table format. Be specific with data ("Nati owns 38%" not "uneven workload"). Include recommended action. End section with **Team Health Note** covering workload distribution, velocity trends, team observations.
 - **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions. Include issue links, owner name in parentheses, brief description.
 - **Shipping Next Week**: Max 5 items. What will actually ship, not everything in-progress. If you have 14 items, you're dumping the backlog. Include owner and deadline if known.
 - **Appendix**: 3-4 sentences per initiative. Skip sub-task lists unless critical. Use emoji indicators (🟢/🟡/🔴) for status at a glance.
-
-**Identify risks by analyzing patterns:**
-- Workload concentration (one person owns >30% of items)
-- No completions in several days
-- Multiple blockers in same area
-- Items with no assignee
-- Overdue dates or stalled in-progress items
 
 ### Compare with Previous Report
 
@@ -249,13 +230,14 @@ uv run scripts/convert_and_upload.py \
 - ❌ Bad: List all 14 in-progress items
 - ✅ Good: Max 5 items that will actually ship next week
 
-**DON'T infer risks from single data points**
-- ❌ Bad: One blocked item → "We're off track"
-- ✅ Good: Look for patterns - clusters, trends, accumulation over time
-
 **DON'T forget to validate shell variables**
 - ❌ Bad: Use `$OUTPUT_DIR` directly in commands
 - ✅ Good: Quote variables: `"$OUTPUT_DIR"` and validate no metacharacters
+
+**DO flag Drive folder URL mismatches immediately**
+- When the user shares a Drive URL, compare it to `DRIVE_FOLDER_URL` in config and memory BEFORE doing anything else
+- ❌ Bad: Silently use the URL from config, or try to access both without saying anything
+- ✅ Good: "The URL you shared differs from the one I have on record — which is correct?" Then update config and memory before proceeding
 
 **DO expand ~ in paths** before using in shell commands
 - ❌ Bad: Pass `~/weekly-reports` to Python script (some tools don't expand ~)

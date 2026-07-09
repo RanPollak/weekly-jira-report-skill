@@ -103,6 +103,18 @@
 - Good: "**Roy Belio** – POCExplorer Video Demo shipped! 3-minute showcase complete, closed May 6, meeting EOW May 8 deadline early."
 - Bad: "Roy completed his task."
 
+#### Data Sources for WIN Section
+- **Primary: Meeting Notes** (`notes_data` from `fetch_notes.py`) — scan for:
+  - Demos given or presented
+  - Blog posts published or written
+  - Presentations delivered (internal or external)
+  - Kudos or shout-outs to team members
+  - Major upstream contributions or PRs merged
+  - Conference talk approvals (CFP accepted)
+  - New tools/dashboards launched
+- **Secondary: Jira** — completed issues that aren't already captured in the notes
+- Only use notes entries within the current reporting period (correlated by date)
+
 ### Section 3: Completed This Week
 - **Only items completed during this reporting period**
 - If nothing completed, write "No completions this week" and move on

@@ -58,6 +58,20 @@ jira issue view "$ISSUE_KEY" --plain --comments 0
 
 **Note:** jira-cli automatically handles pagination, so you don't need to worry about maxResults limits.
 
+## Step 2.5: Fetch Meeting Notes from Google Doc
+
+If `NOTES_DOC_ID` is set in the config, fetch the team's weekly sync meeting notes:
+
+```bash
+cd ~/.claude/skills/weekly-jira-report && python3 scripts/fetch_notes.py "$NOTES_DOC_ID"
+```
+
+**Expected output:** JSON with `entries` — an array of date-correlated meeting note entries from the past 14 days. Each entry has `date`, `date_display`, `title`, `attendees`, and `notes`.
+
+**If successful:** Save output as `notes_data`. The notes will be used as the **primary source** for the Team Celebrations / WIN section.
+
+**If fails or NOTES_DOC_ID is not set:** Continue without notes — Jira data alone produces a useful report. The WIN section will fall back to Jira completions.
+
 ## Step 3: Analyze and Write the Report
 
 **This is where you add real AI value.** Do NOT just template data mechanically. Use your judgment:
@@ -139,6 +153,9 @@ Compute percentages: completed / in-progress / planned
 
 - **Summary**: One clear sentence explaining the overall state with key highlights. Not generic. Include workload distribution improvements if notable.
 - **Team Celebrations / WIN**: ALWAYS include this section. Recognize 2-4 team members. Use bold for names. Be specific with achievements - include issue keys, completion dates, technical details, impact. Celebrate wins, not just completions.
+    - **Primary source: meeting notes** (`notes_data`) — scan for demos given, blog posts published, presentations delivered, kudos/shout-outs, major contributions, PR merges, and conference talks mentioned in the notes. These are the real wins the team discussed live.
+    - **Secondary source: Jira** — use completed issues only to supplement wins not already captured in the notes.
+    - Correlate by date — only use notes entries that fall within the current reporting period.
 - **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions. Include issue links, owner name in parentheses, brief description.
 - **Shipping Next Week**: Max 5 items. What will actually ship, not everything in-progress. If you have 14 items, you're dumping the backlog. Include owner and deadline if known.
 - **Appendix**: 3-4 sentences per initiative. Skip sub-task lists unless critical. Use emoji indicators (🟢/🟡/🔴) for status at a glance.
@@ -162,27 +179,28 @@ Present the generated report to the user. Ask them to review and refine:
 
 Make edits based on their feedback.
 
-## Step 5: Convert to HTML and Upload
+## Step 5: Create Google Doc and Upload
 
-Once the user approves the report:
+Once the user approves the report, create a Google Doc directly from the markdown using `gws`:
 
 ```bash
 cd ~/.claude/skills/weekly-jira-report
-uv run scripts/convert_and_upload.py \
-  --output-dir "$OUTPUT_DIR" \
-  --team "$TEAM_NAME" \
-  --drive-path "$DRIVE_FOLDER_PATH" \
-  --drive-url "$DRIVE_FOLDER_URL" \
-  $([ "$USE_SHARED_DRIVE" = "true" ] && echo "--shared-drive")
+python3 scripts/create_gdoc.py "$OUTPUT_DIR/${TEAM_SLUG}_Weekly_Update_$(date +%Y-%m-%d).md" \
+  --folder-id "11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk"
 ```
+
+This uploads the markdown file to Google Drive with automatic conversion to a native Google Doc. No HTML intermediate step needed.
+
+The script prints the Google Doc URL when done — share that URL with the user.
 
 ## Prerequisites
 
 - [`jira-cli`](https://github.com/ankitpokhrel/jira-cli) - Modern Jira CLI tool
   - Install: `brew install ankitpokhrel/jira-cli/jira-cli` (macOS) or see installation docs for other platforms
   - Configure: `jira init` (interactive setup with your Jira instance)
-- `uv` - Python package manager (for HTML conversion)
-- `rclone` - configured with Google Drive remote (`gdrive:`)
+- `gws` - Google Workspace CLI (for fetching meeting notes and creating Google Docs)
+  - Install: `npm install -g @googleworkspace/cli`
+  - Authenticate: `gws auth login`
 
 ## Error Handling
 
@@ -197,11 +215,11 @@ uv run scripts/convert_and_upload.py \
 - Malformed JSON: Show parsing error, ask user to fix syntax
 - Missing required fields: List which fields are missing
 
-**When convert_and_upload.py fails:**
-- `uv` not installed: Install with `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- `rclone` not configured: Run `rclone config` and create `gdrive` remote
+**When create_gdoc.py fails:**
+- `gws` not installed: Install with `npm install -g @googleworkspace/cli`
+- `gws` not authenticated: Run `gws auth login`
 - Upload timeout: File may have uploaded successfully - check Drive folder
-- Permission denied: Verify user has write access to Shared Drive
+- Permission denied: Verify user has write access to the target Drive folder
 
 **General approach:**
 - Always check command exit codes before proceeding

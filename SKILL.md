@@ -72,6 +72,20 @@ cd ~/.claude/skills/weekly-jira-report && python3 scripts/fetch_notes.py "$NOTES
 
 **If fails or NOTES_DOC_ID is not set:** Continue without notes — Jira data alone produces a useful report. The WIN section will fall back to Jira completions.
 
+## Step 2.6: Fetch Demo & Blog Post Links from Google Drive
+
+If `DEMOS_FOLDER_ID` is set in the config, scan the team's demos/blog posts folder for recent artifacts:
+
+```bash
+cd ~/.claude/skills/weekly-jira-report && python3 scripts/fetch_demos.py "$DEMOS_FOLDER_ID"
+```
+
+**Expected output:** JSON with `items` — an array of recent demo videos, blog post drafts, and presentations. Each item has `name`, `category` (demo/blog/presentation/artifact), `link`, `modified` date, and `folder` (subfolder name if any).
+
+**If successful:** Save output as `demos_data`. Cross-reference these items against `notes_data` — only include a demo/blog link in the WIN section if the corresponding demo, blog post, or artifact is mentioned in the meeting notes. Do NOT add links that have no connection to what was discussed in the notes.
+
+**If fails or DEMOS_FOLDER_ID is not set:** Continue without demo links.
+
 ## Step 3: Analyze and Write the Report
 
 **This is where you add real AI value.** Do NOT just template data mechanically. Use your judgment:
@@ -154,6 +168,7 @@ Compute percentages: completed / in-progress / planned
 - **Summary**: One clear sentence explaining the overall state with key highlights. Not generic. Include workload distribution improvements if notable.
 - **Team Celebrations / WIN**: ALWAYS include this section. Recognize 2-4 team members. Use bold for names. Be specific with achievements - include issue keys, completion dates, technical details, impact. Celebrate wins, not just completions.
     - **Primary source: meeting notes** (`notes_data`) — scan for demos given, blog posts published, presentations delivered, kudos/shout-outs, major contributions, PR merges, and conference talks mentioned in the notes. These are the real wins the team discussed live.
+    - **Enrich with links from `demos_data`** — when a demo or blog post mentioned in the notes has a matching file in the demos folder, include the Google Drive link in the WIN entry. Only add links that match something in the notes.
     - **Secondary source: Jira** — use completed issues only to supplement wins not already captured in the notes.
     - Correlate by date — only use notes entries that fall within the current reporting period.
 - **Completed This Week**: ONLY items completed during this reporting period. If nothing, write "No completions this week." Never pad with old completions. Include issue links, owner name in parentheses, brief description.

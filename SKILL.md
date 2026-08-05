@@ -148,15 +148,19 @@ Using all available data, synthesize the report following this **exact structure
 
 ### Step 6: Save and Upload to Google Drive
 
-1. Save the report as markdown to: `~/catalyst weekly/Catalyst_Weekly_Update_YYYY-MM-DD.md`
+1. Calculate today's date: `DATE=$(date +%Y-%m-%d)`
 
-2. Upload to Google Drive using the create_gdoc script:
+2. Save the report as markdown to: `~/catalyst weekly/Catalyst_Weekly_Update_$DATE.md`
+
+3. Upload to Google Drive — the filename becomes the Google Doc title, so it must include the date:
 
 ```bash
 python3 ~/.claude/skills/weekly-jira-report/scripts/create_gdoc.py \
-  "$HOME/catalyst weekly/Catalyst_Weekly_Update_YYYY-MM-DD.md" \
+  "$HOME/catalyst weekly/Catalyst_Weekly_Update_$DATE.md" \
   --folder-id "11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk"
 ```
+
+The resulting Google Doc will be named **"Catalyst_Weekly_Update_2026-08-05"** (with the actual date).
 
 **Drive folder:** https://drive.google.com/drive/folders/11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk
 

@@ -1,75 +1,82 @@
 # Weekly AI Catalyst Status - Claude Code Skill
 
-An AI-native Claude Code skill that generates weekly status reports for the AI Catalyst team. Pulls Jira data (AIPCC project), team meeting notes (Google Doc), and Gemini transcripts (Google Calendar), then synthesizes everything into a structured report uploaded to Google Drive.
+A Claude Code skill that generates weekly status reports for the AI Catalyst Platform team. It pulls data from three sources — Jira, a shared Google Doc with meeting notes, and Google Calendar Gemini transcripts — then has Claude synthesize everything into a single structured report and upload it as a Google Doc.
 
-## What Makes This AI-Native
+## How It Works
 
-Traditional report scripts mechanically dump Jira data into a template. This skill has Claude:
+1. **Fetches Jira issues** from the AIPCC project for each team member (last 14 days) via `acli`
+2. **Exports the team's meeting notes** from a shared Google Doc via `gws` CLI — parses date-headed weekly entries to extract wins, discussion topics, and action items
+3. **Pulls Gemini transcripts** from the "Weekly AI Catalyst Group Sync" Google Calendar event via `gws` CLI
+4. **Synthesizes the report** — Claude correlates all three sources, writes the narrative, calculates progress percentages, and produces the report in the established Catalyst weekly format
+5. **Saves locally** to `~/catalyst weekly/` and **uploads as a native Google Doc** to the team's shared Drive folder
 
-- **Correlate multiple sources** -- Jira data, meeting notes (Google Doc), and Gemini transcripts feed into one coherent report
-- **Write the WIN section from real conversations** -- meeting notes are the primary source for celebrations, not Jira status fields
-- **Weave meeting context into deep dives** -- discussions, decisions, and action items appear in the relevant initiative section
-- **Analyze patterns** -- identify risk clusters, stalled items, review queue friction
-- **Write with judgment** -- summarize completed work as a narrative, not a raw list
-- **Track changes** -- compare against last week's report to highlight what changed
+## Report Format
 
-## Prerequisites
+The output follows this structure (see a [live example](https://docs.google.com/document/d/1_OKqWW5Is3E-Lfocl_g-cvEukPUbltjEAWtRwtjezOY/edit)):
 
-- [acli](https://github.com/redhat-et/acli) -- Atlassian CLI for Jira Cloud
-- [gws](https://github.com/nicholasgasior/gws) -- Google Workspace CLI (for meeting notes, transcripts, and Google Doc creation)
+| Section | What goes in it |
+|---------|----------------|
+| **1. Summary** | Status emoji, one-paragraph narrative naming people and issue keys, progress percentages |
+| **2. Team Celebrations / WIN** | 2-4 achievements — primary source is meeting notes, enriched with Jira completions |
+| **3. Completed This Week** | Only issues closed this reporting period, with links, owners, and one-line descriptions |
+| **4. Shipping Next Week** | Max 5 items closest to completion — In Progress or In Review |
+| **Appendix — Initiative Deep Dives** | 3-5 sentences per initiative with meeting discussion context woven in |
 
-## Installation
+Meeting context (wins, discussions, decisions, action items) is woven into the relevant sections — not dumped into a separate "Discussion Highlights" block.
 
-### As a Claude Code Skill
+## Quick Start
+
+### 1. Install prerequisites
+
+```bash
+# Atlassian CLI for Jira
+pip install acli
+
+# Google Workspace CLI for Docs, Calendar, Drive
+npm install -g @googleworkspace/cli
+```
+
+### 2. Authenticate
+
+```bash
+acli auth login
+gws auth login
+```
+
+### 3. Clone the skill
 
 ```bash
 cd ~/.claude/skills
 git clone https://github.com/RanPollak/weekly-jira-report-skill.git weekly-ai-catalyst-status
 ```
 
-Claude Code will automatically discover the skill.
+### 4. Configure credentials
 
-### Setup
-
-#### 1. Configure acli
-
-```bash
-acli auth login
-```
-
-#### 2. Configure gws
-
-```bash
-npm install -g @googleworkspace/cli
-gws auth login
-```
-
-#### 3. Create .env file
-
-Create `.env` in your working directory (e.g., `/home/rpollak/ai-first-status/`):
+Create `.env` in your working directory:
 
 ```env
 JIRA_EMAIL=you@redhat.com
-JIRA_TOKEN=your-api-token-here
-NOTES_DOC_ID=your-google-doc-id-here
+JIRA_TOKEN=your-jira-api-token
+NOTES_DOC_ID=your-google-doc-id
 ```
 
-Get your Jira API token at: https://id.atlassian.com/manage-profile/security/api-tokens
+- **JIRA_TOKEN**: Get one at https://id.atlassian.com/manage-profile/security/api-tokens
+- **NOTES_DOC_ID**: The ID from your team's meeting notes Google Doc URL (`https://docs.google.com/document/d/<THIS_ID>/edit`)
 
-## Usage
-
-Ask Claude:
+### 5. Generate a report
 
 ```
 Generate the AI Catalyst weekly status
 ```
 
-Claude will:
-1. Fetch AIPCC Jira data for team members via `acli`
-2. Fetch meeting notes from the Google Doc via `gws`
-3. Fetch Gemini transcripts from Google Calendar via `gws`
-4. Synthesize the report using the established Catalyst weekly format
-5. Save locally and upload as a native Google Doc to the team Drive folder
+## Data Sources
+
+| Source | Tool | Script | What it provides |
+|--------|------|--------|------------------|
+| Jira (AIPCC project) | `acli` | direct CLI call | Issue status, completions, assignees, descriptions |
+| Team meeting notes | `gws` | `scripts/fetch_meeting_notes.py` | Wins, discussion topics, action items, attendees |
+| Gemini transcripts | `gws` | `scripts/fetch_transcripts.py` | AI-generated meeting summaries from Google Calendar |
+| Google Drive upload | `gws` | `scripts/create_gdoc.py` | Uploads markdown as a native Google Doc |
 
 ## Team
 
@@ -82,51 +89,40 @@ Claude will:
 | Roy Belio | Catalyst Lab E2E |
 | Eitan Geiger | Llama Stack, ACP Maintainer |
 | Nati Fridman | Vllm + KServe + llm-d Day 2 Operations, ACP |
-| Gerald Trotman | Agentic AI, Llama Stack, Observability, Org Pulse Dashboard, Catalyst POCs, Lab E2E, Dev Preview Pipeline |
-
-## Data Sources
-
-| Source | Tool | Purpose |
-|--------|------|---------|
-| Jira (AIPCC) | `acli` | Issue status, completions, initiatives |
-| Meeting notes | `scripts/fetch_meeting_notes.py` | WIN section (primary), team discussions |
-| Gemini transcripts | `scripts/fetch_transcripts.py` | Calendar event transcripts |
-| Google Doc output | `scripts/create_gdoc.py` | Upload report as native Google Doc |
+| Gerald Trotman | Agentic AI, Llama Stack, Observability, Org Pulse, Catalyst POCs, Dev Preview Pipeline |
 
 ## Project Structure
 
 ```
 weekly-ai-catalyst-status/
-├── SKILL.md                        # Skill manifest and workflow instructions
+├── SKILL.md                        # Skill definition — workflow steps, report format, writing guidelines
 ├── scripts/
-│   ├── fetch_meeting_notes.py      # Fetch & parse meeting notes from Google Doc via gws
-│   ├── fetch_transcripts.py        # Fetch Gemini transcripts from Google Calendar via gws
-│   ├── fetch_notes.py              # Legacy: fetch notes (older format)
-│   ├── fetch_demos.py              # Scan Drive folder for recent demos/blogs
-│   ├── create_gdoc.py              # Upload markdown as native Google Doc
-│   └── convert_and_upload.py       # Legacy HTML conversion (deprecated)
+│   ├── fetch_meeting_notes.py      # Export & parse Google Doc meeting notes (gws)
+│   ├── fetch_transcripts.py        # Fetch Gemini transcripts from Calendar events (gws)
+│   ├── create_gdoc.py              # Upload markdown as native Google Doc (gws)
+│   ├── fetch_notes.py              # Older meeting notes fetcher (still works, different parsing)
+│   └── fetch_demos.py              # Scan Drive folder for demo videos / blog posts
 └── references/
-    └── report-format.md            # Report template and format reference
+    └── report-format.md            # Report template reference
 ```
-
-## Report Sections
-
-1. **Summary** -- status emoji, one paragraph narrative, progress percentages
-2. **Team Celebrations / WIN** -- achievements from meeting notes, enriched with Jira completions
-3. **Completed This Week** -- only current-period completions from Jira
-4. **Shipping Next Week** -- max 5 items that will actually ship
-5. **Appendix -- Initiative Deep Dives** -- 3-5 sentences each, meeting context woven in
 
 ## FAQ
 
-**Q: How is this different from the weekly-ai-first-status skill?**
-A: This skill covers the AI Catalyst team (Ran's group, AIPCC project). The AI First skill covers the org-wide AI First initiative (RHAISTRAT-1401, steering committee) and publishes to Confluence.
+**How is this different from the `weekly-ai-first-status` skill?**
 
-**Q: Does this modify my Jira data?**
-A: No, it's read-only. It only fetches data, never writes to Jira.
+They cover different teams. This skill reports on the AI Catalyst team (Ran's group, AIPCC Jira project, team sync meeting notes) and uploads to Google Drive. The AI First skill reports on the org-wide AI First initiative (RHAISTRAT-1401, steering committee) and publishes to Confluence.
 
-**Q: What if meeting notes or transcripts are unavailable?**
-A: Both are optional. The skill falls back to Jira-only mode and notes the gap in the report.
+**Does this modify Jira data?**
+
+No. Read-only — it fetches issues and comments but never writes.
+
+**What if the meeting notes or transcripts are unavailable?**
+
+Both are optional. The skill continues with Jira data only and notes the gap in the output.
+
+**Can I use this for a different team?**
+
+Yes. Update the team member email list in SKILL.md (Step 2 JQL query), the AIPCC project key if different, and the `NOTES_DOC_ID` in `.env` to point to your team's meeting notes doc.
 
 ## License
 

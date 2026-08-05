@@ -96,18 +96,18 @@ Using all available data, synthesize the report following this **exact structure
 ```markdown
 # Weekly Catalyst Platform Update – [Month DD, YYYY]
 
-## 1. Summary
+## 1. Team Celebrations / WIN
+- **[Team Member Name]** – [Achievement with specifics and impact. Primary source: meeting notes wins field. Enrich with Jira completions.]
+- **[Team Member Name]** – [Achievement]
+
+---
+
+## 2. Summary
 🟢 On Track | 🟠 At Risk / Delay | 🔴 Off Track
 
 **Current Status:** [One paragraph synthesizing the week: who delivered what, key new initiatives launched, notable progress, items stuck in review. Be specific — name people and issue keys. Include meeting context (wins, discussions, decisions) woven into the narrative naturally.]
 
 *X% Completed • Y% In Progress • Z% Planned*
-
----
-
-## 2. Team Celebrations / WIN
-- **[Team Member Name]** – [Achievement with specifics and impact. Primary source: meeting notes wins field. Enrich with Jira completions.]
-- **[Team Member Name]** – [Achievement]
 
 ---
 
@@ -139,7 +139,8 @@ Using all available data, synthesize the report following this **exact structure
 
 **Writing guidelines (same as weekly-jira-report):**
 - **Target audience:** Managers who need to make decisions in 2 minutes.
-- **Team Celebrations / WIN**: ALWAYS include. Primary source is meeting notes `wins` field. Enrich with Jira completions. Bold the names.
+- **Team Celebrations / WIN**: ALWAYS the FIRST section. Primary source is meeting notes `wins` field. Enrich with Jira completions. Bold the names.
+- **Summary**: Comes AFTER wins. Executive overview paragraph with progress percentages.
 - **Completed This Week**: ONLY items completed this reporting period. Never pad with old completions.
 - **Shipping Next Week**: Max 5 items that will actually ship. Not a backlog dump.
 - **Deep Dives**: 3-5 sentences per initiative. Weave in meeting discussion context where applicable. Skip sub-task lists unless critical.

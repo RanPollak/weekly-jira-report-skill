@@ -16,8 +16,8 @@ The output follows this structure (see a [live example](https://docs.google.com/
 
 | Section | What goes in it |
 |---------|----------------|
-| **1. Summary** | Status emoji, one-paragraph narrative naming people and issue keys, progress percentages |
-| **2. Team Celebrations / WIN** | 2-4 achievements — primary source is meeting notes, enriched with Jira completions |
+| **1. Team Celebrations / WIN** | 2-4 achievements — primary source is meeting notes, enriched with Jira completions |
+| **2. Summary** | Status emoji, one-paragraph narrative naming people and issue keys, progress percentages |
 | **3. Completed This Week** | Only issues closed this reporting period, with links, owners, and one-line descriptions |
 | **4. Shipping Next Week** | Max 5 items closest to completion — In Progress or In Review |
 | **Appendix — Initiative Deep Dives** | 3-5 sentences per initiative with meeting discussion context woven in |

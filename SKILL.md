@@ -94,7 +94,7 @@ Save as `transcript_data`. Supplementary source for meeting context.
 Using all available data, synthesize the report following this **exact structure**:
 
 ```markdown
-# Weekly Catalyst Platform Update – [Month DD, YYYY]
+# Weekly AI Catalyst Platform Update – [Mon DD, YYYY]
 
 ## 1. Team Celebrations / WIN
 - **[Team Member Name]** – [Achievement with specifics and impact. Primary source: meeting notes wins field. Enrich with Jira completions.]
@@ -148,19 +148,20 @@ Using all available data, synthesize the report following this **exact structure
 
 ### Step 6: Save and Upload to Google Drive
 
-1. Calculate today's date: `DATE=$(date +%Y-%m-%d)`
+1. Format the date: `TITLE="Weekly AI Catalyst Platform Update – $(date +'%b %-d, %Y')"`
 
-2. Save the report as markdown to: `~/catalyst weekly/Catalyst_Weekly_Update_$DATE.md`
+2. Save the report as markdown to: `~/catalyst weekly/$TITLE.md`
 
-3. Upload to Google Drive — the filename becomes the Google Doc title, so it must include the date:
+3. Upload to Google Drive — the filename becomes the Google Doc title:
 
 ```bash
+TITLE="Weekly AI Catalyst Platform Update – $(date +'%b %-d, %Y')"
 python3 ~/.claude/skills/weekly-jira-report/scripts/create_gdoc.py \
-  "$HOME/catalyst weekly/Catalyst_Weekly_Update_$DATE.md" \
+  "$HOME/catalyst weekly/$TITLE.md" \
   --folder-id "11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk"
 ```
 
-The resulting Google Doc will be named **"Catalyst_Weekly_Update_2026-08-05"** (with the actual date).
+The resulting Google Doc will be named **"Weekly AI Catalyst Platform Update – Aug 5, 2026"** (with the actual date).
 
 **Drive folder:** https://drive.google.com/drive/folders/11iPCk23YY02-3XmtfPrOWLwxGR-b1Ylk
 
